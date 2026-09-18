@@ -1,0 +1,265 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* SokoResult — dark by default. Bold, terminal-trader aesthetic. */
+
+@theme inline {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-glow: var(--primary-glow);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-mpesa: var(--mpesa);
+  --color-accent-pink: var(--accent-pink);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.625rem;
+
+  /* Surfaces — #0A0A12 / #12121E / #2A2A3E in oklch */
+  --background: oklch(0.13 0.02 280);
+  --foreground: oklch(0.95 0.01 280);
+  --card: oklch(0.17 0.025 280);
+  --card-foreground: oklch(0.95 0.01 280);
+  --popover: oklch(0.17 0.025 280);
+  --popover-foreground: oklch(0.95 0.01 280);
+
+  /* Brand purple #7B2FBE */
+  --primary: oklch(0.5 0.22 305);
+  --primary-foreground: oklch(0.98 0.005 280);
+  --primary-glow: oklch(0.65 0.25 305);
+
+  --secondary: oklch(0.22 0.03 280);
+  --secondary-foreground: oklch(0.95 0.01 280);
+  --muted: oklch(0.22 0.03 280);
+  --muted-foreground: oklch(0.65 0.02 280);
+  --accent: oklch(0.27 0.04 290);
+  --accent-foreground: oklch(0.95 0.01 280);
+
+  /* Trading semantics */
+  --success: oklch(0.78 0.22 150);          /* #00E676 */
+  --success-foreground: oklch(0.13 0.02 280);
+  --destructive: oklch(0.65 0.24 25);       /* #FF5252 */
+  --destructive-foreground: oklch(0.98 0.005 280);
+  --warning: oklch(0.82 0.18 80);           /* #FFB300 */
+  --warning-foreground: oklch(0.13 0.02 280);
+  --mpesa: oklch(0.65 0.18 145);            /* #4CAF50 */
+  --accent-pink: oklch(0.74 0.22 350);      /* hot magenta accent from brand */
+
+  --border: oklch(0.3 0.03 280);
+  --input: oklch(0.27 0.03 280);
+  --ring: oklch(0.55 0.22 305);
+
+  --chart-1: oklch(0.78 0.22 150);
+  --chart-2: oklch(0.65 0.24 25);
+  --chart-3: oklch(0.55 0.22 305);
+  --chart-4: oklch(0.82 0.18 80);
+  --chart-5: oklch(0.7 0.15 200);
+
+  --sidebar: oklch(0.15 0.02 280);
+  --sidebar-foreground: oklch(0.95 0.01 280);
+  --sidebar-primary: oklch(0.55 0.22 305);
+  --sidebar-primary-foreground: oklch(0.98 0.005 280);
+  --sidebar-accent: oklch(0.22 0.03 280);
+  --sidebar-accent-foreground: oklch(0.95 0.01 280);
+  --sidebar-border: oklch(0.27 0.03 280);
+  --sidebar-ring: oklch(0.55 0.22 305);
+
+  --gradient-hero: radial-gradient(
+      ellipse at top,
+      color-mix(in oklab, var(--primary) 35%, transparent) 0%,
+      transparent 60%
+    ),
+    linear-gradient(180deg, var(--background) 0%, oklch(0.1 0.02 280) 100%);
+  --gradient-primary: linear-gradient(135deg, var(--primary), var(--primary-glow));
+  --shadow-glow: 0 0 40px -8px color-mix(in oklab, var(--primary) 60%, transparent);
+  --shadow-card: 0 4px 24px -4px oklch(0 0 0 / 0.4);
+}
+
+/* App is dark-only */
+.dark {
+  color-scheme: dark;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .font-mono,
+  .font-tabular {
+    font-feature-settings: "tnum", "zero";
+  }
+
+  html, body {
+    max-width: 100vw;
+  }
+
+  .font-mono,
+  .font-tabular {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Sleek scrollbar */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 8px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-muted-foreground);
+  }
+}
+
+@utility text-success {
+  color: var(--color-success);
+}
+@utility text-destructive-trade {
+  color: var(--color-destructive);
+}
+@utility bg-gradient-hero {
+  background: var(--gradient-hero);
+}
+@utility bg-gradient-primary {
+  background: var(--gradient-primary);
+}
+@utility shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+@utility shadow-card {
+  box-shadow: var(--shadow-card);
+}
+@utility text-accent-pink {
+  color: var(--color-accent-pink);
+}
+@utility bg-accent-pink {
+  background-color: var(--color-accent-pink);
+}
+@utility bg-grid-dots {
+  background-image: radial-gradient(
+    color-mix(in oklab, var(--primary) 35%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 28px 28px;
+}
+@utility bg-grid-lines {
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--foreground) 6%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--foreground) 6%, transparent) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.animate-ticker {
+  animation: ticker 40s linear infinite;
+}
+
+@keyframes price-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+.animate-price-pulse {
+  animation: price-pulse 1.6s ease-in-out infinite;
+}
+
+/* Trading semantic utilities */
+@utility text-up { color: var(--color-success); }
+@utility text-down { color: var(--color-destructive); }
+@utility text-flat { color: var(--color-muted-foreground); }
+@utility bg-up-soft { background-color: color-mix(in oklab, var(--color-success) 14%, transparent); }
+@utility bg-down-soft { background-color: color-mix(in oklab, var(--color-destructive) 14%, transparent); }
+@utility bg-flat-soft { background-color: color-mix(in oklab, var(--color-muted-foreground) 12%, transparent); }
+
+/* Dense numeric utilities */
+@utility num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+@utility stat-xl {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 2.25rem;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+/* Hide scrollbar utility (used by mobile ticker) */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Direction flash for price-change cells */
+@keyframes flash-up {
+  0% { background-color: color-mix(in oklab, var(--color-success) 18%, transparent); }
+  100% { background-color: transparent; }
+}
+@keyframes flash-down {
+  0% { background-color: color-mix(in oklab, var(--color-destructive) 18%, transparent); }
+  100% { background-color: transparent; }
+}
+.flash-up { animation: flash-up 600ms ease-out; }
+.flash-down { animation: flash-down 600ms ease-out; }
