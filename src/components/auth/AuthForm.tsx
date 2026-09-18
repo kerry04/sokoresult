@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -93,11 +92,11 @@ export function AuthForm({ mode, redirectTo }: Props) {
         mode === "signup"
           ? `${window.location.origin}/onboarding`
           : `${window.location.origin}${target}`;
-      const result = await lovable.auth.signInWithOAuth(provider, {
-        redirect_uri: oauthReturn,
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: oauthReturn },
       });
-      if (result.error) throw result.error;
-      if (result.redirected) return;
+      if (error) throw error;
       await waitForSession();
       navigate({ to: mode === "signup" ? "/onboarding" : target });
     } catch (err) {

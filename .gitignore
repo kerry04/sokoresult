@@ -25,6 +25,9 @@ dist-ssr
 .wrangler/
 .dev.vars
 
+# Generated: bundled migrations (run supabase/apply_all.sh to regenerate)
+supabase/apply_all.sql
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
