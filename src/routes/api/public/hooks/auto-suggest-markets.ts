@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { requireCronSecret } from "@/lib/server/cron-auth";
 import { createClient } from "@supabase/supabase-js";
-import { callGeminiTool } from "@/lib/server/gemini";
+import { callLlmTool } from "@/lib/server/llm";
 import {
   clusterArticles,
   edgeScore,
@@ -47,8 +47,8 @@ export const Route = createFileRoute("/api/public/hooks/auto-suggest-markets")({
         if (denied) return denied;
         const SUPABASE_URL = process.env.SUPABASE_URL!;
         const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-        if (!process.env.GEMINI_API_KEY) {
-          return new Response(JSON.stringify({ ok: false, error: "GEMINI_API_KEY missing" }), {
+        if (!process.env.OPENROUTER_API_KEY) {
+          return new Response(JSON.stringify({ ok: false, error: "OPENROUTER_API_KEY missing" }), {
             status: 500, headers: { "Content-Type": "application/json" },
           });
         }
@@ -139,7 +139,7 @@ export const Route = createFileRoute("/api/public/hooks/auto-suggest-markets")({
             .join("\n");
 
           try {
-            const args = await callGeminiTool<{
+            const args = await callLlmTool<{
               market_question: string; outcomes: string[]; resolution_criteria: string;
               deadline: string; category: string; event_type: string;
               key_entities: string[]; reasoning: string;

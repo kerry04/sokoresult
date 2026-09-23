@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { requireCronSecret } from "@/lib/server/cron-auth";
 import { createClient } from "@supabase/supabase-js";
-import { callGeminiTool } from "@/lib/server/gemini";
+import { callLlmTool } from "@/lib/server/llm";
 
 const TOOL = {
   name: "recommend_resolution",
@@ -35,7 +35,7 @@ async function recommend(
     .map((a, i) => `[${i + 1}] ${a.title} — ${a.url} (${a.published_at})`)
     .join("\n");
 
-  return await callGeminiTool<Recommendation>({
+  return await callLlmTool<Recommendation>({
     system:
       "You are an oracle for a prediction market. Given a YES/NO question and recent news, " +
       "recommend YES, NO, or UNRESOLVED with a calibrated confidence. Only choose YES/NO if the " +

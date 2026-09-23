@@ -101,7 +101,7 @@ export interface QuantSuggestion {
 export const suggestMarket = createServerFn({ method: "POST" })
   .inputValidator((d: SuggestInput) => d)
   .handler(async ({ data }): Promise<{ suggestions: QuantSuggestion[]; rejected: number }> => {
-    const { callGeminiTool } = await import("./server/gemini");
+    const { callLlmTool } = await import("./server/llm");
     const {
       clusterArticles,
       edgeScore,
@@ -137,7 +137,7 @@ export const suggestMarket = createServerFn({ method: "POST" })
         .join("\n");
 
       try {
-        const args = await callGeminiTool<{
+        const args = await callLlmTool<{
           market_question: string;
           outcomes: string[];
           resolution_criteria: string;

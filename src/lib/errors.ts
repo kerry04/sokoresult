@@ -10,6 +10,17 @@ interface MaybeError {
 }
 
 const PATTERNS: Array<{ test: (msg: string, code?: string) => boolean; out: string }> = [
+  // Firebase auth errors (messages look like "Firebase: Error (auth/xxx).")
+  { test: (m) => /auth\/invalid-credential|auth\/wrong-password|auth\/user-not-found|auth\/invalid-email/i.test(m), out: "Wrong email or password." },
+  { test: (m) => /auth\/email-already-in-use|auth\/credential-already-in-use/i.test(m), out: "An account with that email already exists." },
+  { test: (m) => /auth\/weak-password/i.test(m), out: "Password must be at least 8 characters." },
+  { test: (m) => /auth\/popup-closed-by-user|auth\/cancelled-popup-request/i.test(m), out: "Sign-in cancelled." },
+  { test: (m) => /auth\/popup-blocked/i.test(m), out: "Your browser blocked the sign-in window. Allow popups and try again." },
+  { test: (m) => /auth\/account-exists-with-different-credential/i.test(m), out: "An account with this email already uses a different sign-in method. Log in with email and password." },
+  { test: (m) => /auth\/operation-not-allowed/i.test(m), out: "This sign-in method isn't enabled yet. Use email and password, or contact support." },
+  { test: (m) => /auth\/unauthorized-domain/i.test(m), out: "This site's domain isn't authorized for sign-in yet. Please contact support." },
+  { test: (m) => /auth\/requests-from-referer/i.test(m), out: "Google sign-in isn't authorized for this site's domain yet. Please contact support." },
+  { test: (m) => /auth\/user-disabled/i.test(m), out: "This account has been disabled. Contact support." },
   { test: (m) => /invalid login credentials/i.test(m), out: "Wrong email or password." },
   { test: (m) => /email not confirmed/i.test(m), out: "Please confirm your email first." },
   { test: (m) => /user already registered|already exists/i.test(m), out: "An account with that email already exists." },

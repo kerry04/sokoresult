@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useRef, useState } from "react";
+import { supabase, isDemoMode } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -10,6 +10,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff } from "lucide-react";
 import { friendlyError } from "@/lib/errors";
 import { safeRedirect } from "@/lib/utils";
+import {
+  isFirebaseConfigured,
+  firebaseSignIn,
+  firebaseSignUp,
+  firebaseSignInWithGoogle,
+  firebaseSignInWithApple,
+  setOAuthRedirectTarget,
+  consumeOAuthRedirectTarget,
+  completeRedirectSignIn,
+} from "@/integrations/firebase/client";
 
 interface Props {
   mode: "login" | "signup";
@@ -26,8 +36,13 @@ export function AuthForm({ mode, redirectTo }: Props) {
   const [otpSent, setOtpSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const redirectHandled = useRef(false);
 
   const target = safeRedirect(redirectTo, mode === "signup" ? "/onboarding" : "/markets");
+
+  // Firebase path is only usable when a real Supabase backend exists to
+  // exchange tokens with — the local demo backend can't accept ID tokens.
+  const firebaseEnabled = isFirebaseConfigured && !isDemoMode;
 
   // After auth completes, wait for the session to actually exist on this
   // device before navigating — otherwise the protected route guard sees a
@@ -42,6 +57,37 @@ export function AuthForm({ mode, redirectTo }: Props) {
     return false;
   };
 
+  // Complete a redirect-based Google/Apple sign-in (popup was blocked on the
+  // previous load, so the provider sent the user back here full-page).
+  useEffect(() => {
+    if (redirectHandled.current) return;
+    redirectHandled.current = true;
+    if (!firebaseEnabled) return;
+
+    (async () => {
+      const storedTarget = consumeOAuthRedirectTarget();
+      const idToken = await completeRedirectSignIn();
+      if (!idToken) return;
+
+      setLoading(true);
+      try {
+        const { error } = await supabase.auth.signInWithIdToken({
+          provider: "firebase",
+          token: idToken,
+        });
+        if (error) throw error;
+        const ok = await waitForSession();
+        if (!ok) throw new Error("Sign-in completed but the session did not load. Please try again.");
+        toast.success("Welcome back");
+        navigate({ to: mode === "signup" ? "/onboarding" : safeRedirect(storedTarget ?? target) });
+      } catch (err) {
+        toast.error(friendlyError(err));
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     if (mode === "signup" && !acceptedTerms) {
@@ -51,24 +97,74 @@ export function AuthForm({ mode, redirectTo }: Props) {
     setLoading(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: `${window.location.origin}/onboarding` },
-        });
-        if (error) throw error;
-        // If email confirmation is required, the session won't be established here.
-        const ok = await waitForSession(2000);
-        if (ok) {
-          toast.success("Account created");
-          navigate({ to: "/onboarding" });
-        } else {
-          toast.success("Account created! Check your email to confirm, then log in.");
-          navigate({ to: "/login" });
+        // Firebase-first: create the account in Firebase, then exchange the
+        // ID token for a Supabase session (third-party auth) so auth.uid()
+        // and every RLS policy keep working. Without Firebase configured
+        // (local demo mode) fall back to native Supabase signup.
+        let firebaseOk = false;
+        if (firebaseEnabled) {
+          let fbCreated = false;
+          try {
+            const idToken = await firebaseSignUp(email, password);
+            fbCreated = true;
+            const { error } = await supabase.auth.signInWithIdToken({
+              provider: "firebase",
+              token: idToken,
+            });
+            if (error) throw error;
+            firebaseOk = true;
+          } catch (err) {
+            if (fbCreated) throw err; // Firebase OK but exchange failed — surface it
+            // else: Firebase rejected (e.g. email in use) — try Supabase signup
+          }
         }
+        if (!firebaseOk) {
+          const { error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: { emailRedirectTo: `${window.location.origin}/onboarding` },
+          });
+          if (error) throw error;
+          // If email confirmation is required, the session won't be established here.
+          const ok = await waitForSession(2000);
+          if (ok) {
+            toast.success("Account created");
+            navigate({ to: "/onboarding" });
+          } else {
+            toast.success("Account created! Check your email to confirm, then log in.");
+            navigate({ to: "/login" });
+          }
+          return;
+        }
+        await waitForSession();
+        toast.success("Account created");
+        navigate({ to: "/onboarding" });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        // Firebase-first: sign in with Firebase, then exchange the ID token
+        // for a Supabase session (third-party auth) so auth.uid() and every
+        // RLS policy keep working. Users unknown to Firebase (staff accounts
+        // seeded directly in Supabase) fall back to native password login.
+        let firebaseOk = false;
+        if (firebaseEnabled) {
+          let fbSignedIn = false;
+          try {
+            const idToken = await firebaseSignIn(email, password);
+            fbSignedIn = true;
+            const { error } = await supabase.auth.signInWithIdToken({
+              provider: "firebase",
+              token: idToken,
+            });
+            if (error) throw error;
+            firebaseOk = true;
+          } catch (err) {
+            if (fbSignedIn) throw err; // Firebase OK but exchange failed — surface it
+            // else: not a Firebase user — fall through to Supabase login
+          }
+        }
+        if (!firebaseOk) {
+          const { error } = await supabase.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+        }
         await waitForSession();
         toast.success("Welcome back");
         navigate({ to: target });
@@ -80,27 +176,42 @@ export function AuthForm({ mode, redirectTo }: Props) {
     }
   };
 
+  // Google / Apple SSO: authenticate with Firebase, then exchange the ID
+  // token for a Supabase session so RLS policies keep working.
   const handleOAuth = async (provider: "google" | "apple") => {
     if (mode === "signup" && !acceptedTerms) {
       toast.error("Please accept the Terms & Conditions to continue");
       return;
     }
+    if (!firebaseEnabled) {
+      toast.error("Google / Apple sign-in isn't set up yet. Use email and password for now.");
+      return;
+    }
     setLoading(true);
     try {
-      // Always send OAuth users back to a real in-app destination, never the landing page.
-      const oauthReturn =
-        mode === "signup"
-          ? `${window.location.origin}/onboarding`
-          : `${window.location.origin}${target}`;
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: { redirectTo: oauthReturn },
+      // Where to send the user once signed in — also survives redirect flows.
+      const landing = mode === "signup" ? "/onboarding" : target;
+      setOAuthRedirectTarget(landing);
+
+      const idToken =
+        provider === "google" ? await firebaseSignInWithGoogle() : await firebaseSignInWithApple();
+
+      // null means the flow switched to a full-page redirect; the provider
+      // will bounce the user back here and the effect above finishes the job.
+      if (!idToken) return;
+
+      const { error } = await supabase.auth.signInWithIdToken({
+        provider: "firebase",
+        token: idToken,
       });
       if (error) throw error;
-      await waitForSession();
-      navigate({ to: mode === "signup" ? "/onboarding" : target });
+      const ok = await waitForSession();
+      if (!ok) throw new Error("Sign-in completed but the session did not load. Please try again.");
+      toast.success("Welcome back");
+      navigate({ to: landing });
     } catch (err) {
       toast.error(friendlyError(err));
+    } finally {
       setLoading(false);
     }
   };

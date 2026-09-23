@@ -28,6 +28,9 @@ dist-ssr
 # Generated: bundled migrations (run supabase/apply_all.sh to regenerate)
 supabase/apply_all.sql
 
+# Supabase CLI session data
+supabase/.temp/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -38,3 +41,5 @@ supabase/apply_all.sql
 *.njsproj
 *.sln
 *.sw?
+.vercel
+.env*

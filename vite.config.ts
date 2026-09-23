@@ -3,16 +3,17 @@ import tsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
-import { cloudflare } from "@cloudflare/vite-plugin";
+import { nitro } from "nitro/vite";
 
-export default defineConfig(({ command }) => ({
+export default defineConfig({
   plugins: [
     tsConfigPaths(),
     tailwindcss(),
+    // Nitro handles the server build. It auto-detects Vercel (VERCEL=1) and
+    // emits the Vercel preset there; local `vite build` falls back to a
+    // plain Node server in .output/server/index.mjs.
+    nitro(),
     tanstackStart(),
     viteReact(),
-    // Cloudflare Workers target for `vite build` (see wrangler.jsonc).
-    // Local dev runs on the plain Node-based Vite/Start dev server.
-    ...(command === "build" ? [cloudflare()] : []),
   ],
-}));
+});

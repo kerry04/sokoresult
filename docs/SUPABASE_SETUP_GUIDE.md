@@ -41,7 +41,7 @@ itself enforces every rule.
 | Client session state | `src/lib/auth-context.tsx` (reads the Supabase session, shares user/profile with pages) |
 | Route guards | `src/routes/_authed.tsx` (bounces to `/login` if no session), `src/routes/admin/route.tsx` (verifies admin role via secure RPC) |
 | Slippage preview before a trade | `simulate_lmsr_trade` RPC (called from the trade dialog) |
-| AI market suggestions / sentiment | `src/lib/server/gemini.ts` + `/api/public/hooks/*` routes (direct Gemini API — optional) |
+| AI market suggestions / sentiment | `src/lib/server/llm.ts` + `/api/public/hooks/*` routes (OpenRouter — optional) |
 | News/social scraping | Apify actors via the hook routes (optional) |
 | Friendly error messages | `src/lib/errors.ts` (`friendlyError()`) |
 
@@ -219,7 +219,7 @@ values ('<uuid>', 'admin');
 
 | Key | Get it from | Unlocks |
 |---|---|---|
-| `GEMINI_API_KEY` | <https://aistudio.google.com/apikey> (free tier) | AI market suggestions, sentiment analysis |
+| `OPENROUTER_API_KEY` | <https://openrouter.ai/settings/keys> (free tier) | AI market suggestions, sentiment analysis |
 | `APIFY_API_TOKEN` | <https://console.apify.com> | News/tweet scrapers |
 | `CRON_SECRET` | any long random string | Protects `/api/public/hooks/*` routes |
 

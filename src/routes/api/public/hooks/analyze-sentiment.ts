@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { requireCronSecret } from "@/lib/server/cron-auth";
 import { createClient } from "@supabase/supabase-js";
-import { callGeminiTool } from "@/lib/server/gemini";
+import { callLlmTool } from "@/lib/server/llm";
 import { sanitizeKeywords } from "@/lib/server/keywords";
 import { logPipelineFailure } from "@/lib/server/pipeline-alerts";
 
-// Batch tool: scores multiple articles in a single Gemini call.
+// Batch tool: scores multiple articles in a single LLM call.
 // Drastically reduces request count to stay under rate limits.
 const BATCH_TOOL = {
   name: "score_articles",
@@ -113,11 +113,10 @@ function buildBatchUser(batch: Array<{ title: string; body: string | null }>): s
 async function scoreBatchOnce(
   batch: Array<{ title: string; body: string | null }>,
 ): Promise<Map<number, ScoredItem>> {
-  const out = await callGeminiTool<{ results: ScoredItem[] }>({
+  const out = await callLlmTool<{ results: ScoredItem[] }>({
     system: SYSTEM_PROMPT,
     user: buildBatchUser(batch).slice(0, 20000),
     tool: BATCH_TOOL,
-    model: "gemini-2.5-flash-lite",
     timeoutMs: 45_000,
   });
   const map = new Map<number, ScoredItem>();

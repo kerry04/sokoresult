@@ -5,7 +5,7 @@ up on **your own Supabase project** with fresh data.
 
 **Removed:** `@lovable.dev/cloud-auth-js`, `@lovable.dev/vite-tanstack-config`,
 `.lovable/`, `src/integrations/lovable/`, `previewAuthStorage.ts`, the Lovable
-AI Gateway (was already unused — `lib/server/gemini.ts` calls Google directly),
+AI Gateway (was already unused — `lib/server/llm.ts` calls OpenRouter directly),
 and all `pg_cron` jobs that POSTed to dead `*.lovable.app` hosts
 (see `supabase/migrations/20260918120000_delovable_drop_lovable_cron.sql`).
 
@@ -34,7 +34,7 @@ cp .env.example .env
 ```
 
 `.env` is gitignored — never commit it. Optional extras (not required for
-trading to work): `GEMINI_API_KEY` (free at aistudio.google.com/apikey),
+trading to work): `OPENROUTER_API_KEY` (free at openrouter.ai/settings/keys),
 `APIFY_API_TOKEN`, `CRON_SECRET` (any long random string).
 
 ## 3. Apply the schema (45 migrations, in order)
@@ -103,5 +103,5 @@ Worker config, and re-add `pg_cron` jobs pointing at your new public domain.
 | Server admin client | `src/integrations/supabase/client.server.ts` |
 | Server route auth | `src/integrations/supabase/auth-middleware.ts` |
 | Cron hook auth | `src/lib/server/cron-auth.ts` (uses `CRON_SECRET`) |
-| Gemini client | `src/lib/server/gemini.ts` (direct Google API) |
+| LLM client | `src/lib/server/llm.ts` (OpenRouter — Ling 3.0 Flash VL) |
 | Env template | `.env.example` |

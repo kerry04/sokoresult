@@ -1,1 +1,6 @@
-project_id = "kozwfjvdewhvvesgcwwh"
+project_id = "viwkakdhvdpeorjsjkwj"
+
+# Third-party auth: Firebase (Supabase exchanges Firebase ID tokens -> Supabase sessions)
+[auth.third_party.firebase]
+enabled = true
+project_id = "sokoresult-5ab34"

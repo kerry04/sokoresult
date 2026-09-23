@@ -47,6 +47,7 @@ import { Route as AuthedKycRouteImport } from './routes/_authed/kyc'
 import { Route as AuthedComingSoonRouteImport } from './routes/_authed/coming-soon'
 import { Route as AdminMarketsIndexRouteImport } from './routes/admin/markets.index'
 import { Route as AuthedMarketsIndexRouteImport } from './routes/_authed/markets.index'
+import { Route as ApiLocalSplatRouteImport } from './routes/api/local/$'
 import { Route as AdminMarketsSuggestRouteImport } from './routes/admin/markets.suggest'
 import { Route as AdminMarketsCreateRouteImport } from './routes/admin/markets.create'
 import { Route as AuthedUUserIdRouteImport } from './routes/_authed/u.$userId'
@@ -251,6 +252,11 @@ const AuthedMarketsIndexRoute = AuthedMarketsIndexRouteImport.update({
   path: '/markets/',
   getParentRoute: () => AuthedRoute,
 } as any)
+const ApiLocalSplatRoute = ApiLocalSplatRouteImport.update({
+  id: '/api/local/$',
+  path: '/api/local/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminMarketsSuggestRoute = AdminMarketsSuggestRouteImport.update({
   id: '/markets/suggest',
   path: '/markets/suggest',
@@ -369,6 +375,7 @@ export interface FileRoutesByFullPath {
   '/u/$userId': typeof AuthedUUserIdRoute
   '/admin/markets/create': typeof AdminMarketsCreateRoute
   '/admin/markets/suggest': typeof AdminMarketsSuggestRoute
+  '/api/local/$': typeof ApiLocalSplatRoute
   '/markets/': typeof AuthedMarketsIndexRoute
   '/admin/markets/': typeof AdminMarketsIndexRoute
   '/admin/markets/$id/edit': typeof AdminMarketsIdEditRoute
@@ -420,6 +427,7 @@ export interface FileRoutesByTo {
   '/u/$userId': typeof AuthedUUserIdRoute
   '/admin/markets/create': typeof AdminMarketsCreateRoute
   '/admin/markets/suggest': typeof AdminMarketsSuggestRoute
+  '/api/local/$': typeof ApiLocalSplatRoute
   '/markets': typeof AuthedMarketsIndexRoute
   '/admin/markets': typeof AdminMarketsIndexRoute
   '/admin/markets/$id/edit': typeof AdminMarketsIdEditRoute
@@ -475,6 +483,7 @@ export interface FileRoutesById {
   '/_authed/u/$userId': typeof AuthedUUserIdRoute
   '/admin/markets/create': typeof AdminMarketsCreateRoute
   '/admin/markets/suggest': typeof AdminMarketsSuggestRoute
+  '/api/local/$': typeof ApiLocalSplatRoute
   '/_authed/markets/': typeof AuthedMarketsIndexRoute
   '/admin/markets/': typeof AdminMarketsIndexRoute
   '/admin/markets/$id/edit': typeof AdminMarketsIdEditRoute
@@ -530,6 +539,7 @@ export interface FileRouteTypes {
     | '/u/$userId'
     | '/admin/markets/create'
     | '/admin/markets/suggest'
+    | '/api/local/$'
     | '/markets/'
     | '/admin/markets/'
     | '/admin/markets/$id/edit'
@@ -581,6 +591,7 @@ export interface FileRouteTypes {
     | '/u/$userId'
     | '/admin/markets/create'
     | '/admin/markets/suggest'
+    | '/api/local/$'
     | '/markets'
     | '/admin/markets'
     | '/admin/markets/$id/edit'
@@ -635,6 +646,7 @@ export interface FileRouteTypes {
     | '/_authed/u/$userId'
     | '/admin/markets/create'
     | '/admin/markets/suggest'
+    | '/api/local/$'
     | '/_authed/markets/'
     | '/admin/markets/'
     | '/admin/markets/$id/edit'
@@ -658,6 +670,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   SignupRoute: typeof SignupRoute
   TermsRoute: typeof TermsRoute
+  ApiLocalSplatRoute: typeof ApiLocalSplatRoute
   ApiPublicHooksAnalyzeSentimentRoute: typeof ApiPublicHooksAnalyzeSentimentRoute
   ApiPublicHooksAutoResolveRoute: typeof ApiPublicHooksAutoResolveRoute
   ApiPublicHooksAutoSuggestMarketsRoute: typeof ApiPublicHooksAutoSuggestMarketsRoute
@@ -935,6 +948,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedMarketsIndexRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/api/local/$': {
+      id: '/api/local/$'
+      path: '/api/local/$'
+      fullPath: '/api/local/$'
+      preLoaderRoute: typeof ApiLocalSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/markets/suggest': {
       id: '/admin/markets/suggest'
       path: '/markets/suggest'
@@ -1155,6 +1175,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   SignupRoute: SignupRoute,
   TermsRoute: TermsRoute,
+  ApiLocalSplatRoute: ApiLocalSplatRoute,
   ApiPublicHooksAnalyzeSentimentRoute: ApiPublicHooksAnalyzeSentimentRoute,
   ApiPublicHooksAutoResolveRoute: ApiPublicHooksAutoResolveRoute,
   ApiPublicHooksAutoSuggestMarketsRoute: ApiPublicHooksAutoSuggestMarketsRoute,
