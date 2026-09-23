@@ -3,7 +3,7 @@ import { BookOpen, PieChart, TrendingUp, User, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
-  { label: "Markets", to: "/markets", icon: TrendingUp },
+  { label: "Markets", to: "/", icon: TrendingUp },
   { label: "Learn", to: "/learn", icon: BookOpen },
   { label: "Trade", to: "/signup", icon: Zap, cta: true },
   { label: "Portfolio", to: "/portfolio", icon: PieChart },

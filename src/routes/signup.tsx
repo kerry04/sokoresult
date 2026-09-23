@@ -1,8 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { z } from "zod";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { AuthForm } from "@/components/auth/AuthForm";
+import { safeRedirect } from "@/lib/utils";
 
 export const Route = createFileRoute("/signup")({
+  validateSearch: z.object({
+    redirect: z.string().optional().default("/onboarding"),
+  }),
   head: () => ({
     meta: [{ title: "Sign up — SokoResult" }],
   }),
@@ -10,6 +15,8 @@ export const Route = createFileRoute("/signup")({
 });
 
 function SignupPage() {
+  const { redirect: redirectTo } = Route.useSearch();
+  const safeTarget = safeRedirect(redirectTo, "/onboarding");
   return (
     <AuthShell
       title="Create account"
@@ -23,7 +30,7 @@ function SignupPage() {
         </>
       }
     >
-      <AuthForm mode="signup" redirectTo="/onboarding" />
+      <AuthForm mode="signup" redirectTo={safeTarget} />
     </AuthShell>
   );
 }

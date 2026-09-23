@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { MarketPriceChart } from "./MarketPriceChart";
 import { ProbabilityNote } from "./ProbabilityNote";
+import { DraftTradeTicket } from "./DraftTradeTicket";
 import { CATEGORY_LABEL, formatKESCompact, formatPrice, formatTimeRemaining } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import type { ProductMarket } from "./product-market";
@@ -122,26 +123,8 @@ export function FeaturedMarket({ market }: { market: ProductMarket | null }) {
             )}
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-2.5">
-            <Button
-              asChild
-              size="lg"
-              className="min-h-[44px] bg-success font-semibold text-success-foreground hover:bg-success/90"
-            >
-              <Link to="/markets/$slug" params={{ slug: market.slug }} search={{ side: "YES" }}>
-                Buy Yes — {formatPrice(market.yes_price)}
-              </Link>
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="min-h-[44px] border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
-            >
-              <Link to="/markets/$slug" params={{ slug: market.slug }} search={{ side: "NO" }}>
-                Buy No — {formatPrice(market.no_price)}
-              </Link>
-            </Button>
+          <div className="mt-6">
+            <DraftTradeTicket market={market} variant="wide" />
           </div>
         </div>
 

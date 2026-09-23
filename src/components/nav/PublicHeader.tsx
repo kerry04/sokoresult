@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { label: "Markets", to: "/markets", hash: undefined },
-  { label: "Trending", to: "/", hash: "trending" },
+  { label: "Markets", to: "/", hash: undefined },
   { label: "Learn", to: "/learn", hash: undefined },
 ] as const;
 

@@ -26,6 +26,7 @@ import { Route as LearnMarketsRouteImport } from './routes/learn.markets'
 import { Route as LearnHowToTradeRouteImport } from './routes/learn.how-to-trade'
 import { Route as LearnExamplesRouteImport } from './routes/learn.examples'
 import { Route as LearnDisclaimerRouteImport } from './routes/learn.disclaimer'
+import { Route as LearnAboutRouteImport } from './routes/learn.about'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminTradesRouteImport } from './routes/admin/trades'
 import { Route as AdminSyndicatesRouteImport } from './routes/admin/syndicates'
@@ -145,6 +146,11 @@ const LearnExamplesRoute = LearnExamplesRouteImport.update({
 const LearnDisclaimerRoute = LearnDisclaimerRouteImport.update({
   id: '/disclaimer',
   path: '/disclaimer',
+  getParentRoute: () => LearnRoute,
+} as any)
+const LearnAboutRoute = LearnAboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => LearnRoute,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
@@ -362,6 +368,7 @@ export interface FileRoutesByFullPath {
   '/admin/syndicates': typeof AdminSyndicatesRoute
   '/admin/trades': typeof AdminTradesRoute
   '/admin/users': typeof AdminUsersRoute
+  '/learn/about': typeof LearnAboutRoute
   '/learn/disclaimer': typeof LearnDisclaimerRoute
   '/learn/examples': typeof LearnExamplesRoute
   '/learn/how-to-trade': typeof LearnHowToTradeRoute
@@ -414,6 +421,7 @@ export interface FileRoutesByTo {
   '/admin/syndicates': typeof AdminSyndicatesRoute
   '/admin/trades': typeof AdminTradesRoute
   '/admin/users': typeof AdminUsersRoute
+  '/learn/about': typeof LearnAboutRoute
   '/learn/disclaimer': typeof LearnDisclaimerRoute
   '/learn/examples': typeof LearnExamplesRoute
   '/learn/how-to-trade': typeof LearnHowToTradeRoute
@@ -470,6 +478,7 @@ export interface FileRoutesById {
   '/admin/syndicates': typeof AdminSyndicatesRoute
   '/admin/trades': typeof AdminTradesRoute
   '/admin/users': typeof AdminUsersRoute
+  '/learn/about': typeof LearnAboutRoute
   '/learn/disclaimer': typeof LearnDisclaimerRoute
   '/learn/examples': typeof LearnExamplesRoute
   '/learn/how-to-trade': typeof LearnHowToTradeRoute
@@ -526,6 +535,7 @@ export interface FileRouteTypes {
     | '/admin/syndicates'
     | '/admin/trades'
     | '/admin/users'
+    | '/learn/about'
     | '/learn/disclaimer'
     | '/learn/examples'
     | '/learn/how-to-trade'
@@ -578,6 +588,7 @@ export interface FileRouteTypes {
     | '/admin/syndicates'
     | '/admin/trades'
     | '/admin/users'
+    | '/learn/about'
     | '/learn/disclaimer'
     | '/learn/examples'
     | '/learn/how-to-trade'
@@ -633,6 +644,7 @@ export interface FileRouteTypes {
     | '/admin/syndicates'
     | '/admin/trades'
     | '/admin/users'
+    | '/learn/about'
     | '/learn/disclaimer'
     | '/learn/examples'
     | '/learn/how-to-trade'
@@ -799,6 +811,13 @@ declare module '@tanstack/react-router' {
       path: '/disclaimer'
       fullPath: '/learn/disclaimer'
       preLoaderRoute: typeof LearnDisclaimerRouteImport
+      parentRoute: typeof LearnRoute
+    }
+    '/learn/about': {
+      id: '/learn/about'
+      path: '/about'
+      fullPath: '/learn/about'
+      preLoaderRoute: typeof LearnAboutRouteImport
       parentRoute: typeof LearnRoute
     }
     '/admin/users': {
@@ -1144,6 +1163,7 @@ const AuthedRouteWithChildren =
   AuthedRoute._addFileChildren(AuthedRouteChildren)
 
 interface LearnRouteChildren {
+  LearnAboutRoute: typeof LearnAboutRoute
   LearnDisclaimerRoute: typeof LearnDisclaimerRoute
   LearnExamplesRoute: typeof LearnExamplesRoute
   LearnHowToTradeRoute: typeof LearnHowToTradeRoute
@@ -1154,6 +1174,7 @@ interface LearnRouteChildren {
 }
 
 const LearnRouteChildren: LearnRouteChildren = {
+  LearnAboutRoute: LearnAboutRoute,
   LearnDisclaimerRoute: LearnDisclaimerRoute,
   LearnExamplesRoute: LearnExamplesRoute,
   LearnHowToTradeRoute: LearnHowToTradeRoute,

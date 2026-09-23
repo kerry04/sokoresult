@@ -46,6 +46,7 @@ import {
 type MarketSearch = {
   side?: "YES" | "NO";
   amount?: number;
+  shares?: number;
   tab?: "buy" | "sell";
   outcome?: string;
 };
@@ -58,10 +59,13 @@ export const Route = createFileRoute("/_authed/markets/$slug")({
     const amountNum = Number(search.amount);
     const amount =
       Number.isFinite(amountNum) && amountNum > 0 ? Math.min(amountNum, 1_000_000) : undefined;
+    const sharesNum = Math.floor(Number(search.shares));
+    const shares =
+      Number.isFinite(sharesNum) && sharesNum > 0 ? Math.min(sharesNum, 1_000_000) : undefined;
     const tabRaw = String(search.tab ?? "").toLowerCase();
     const tab = tabRaw === "sell" || tabRaw === "buy" ? (tabRaw as "buy" | "sell") : undefined;
     const outcomeRaw = typeof search.outcome === "string" ? search.outcome : undefined;
-    return { side, amount, tab, outcome: outcomeRaw };
+    return { side, amount, shares, tab, outcome: outcomeRaw };
   },
   component: MarketDetailPage,
 });
@@ -542,7 +546,8 @@ function TradePanel({ market, balance }: { market: Market; balance: number }) {
   const { user, profile, refreshProfile, enqueueAchievements } = useAuth();
   const search = Route.useSearch();
   const [outcome, setOutcome] = useState<"yes" | "no">(search.side === "NO" ? "no" : "yes");
-  const [shares, setShares] = useState<number>(10);
+  // Draft handoff from the public trade ticket (side + shares pre-filled).
+  const [shares, setShares] = useState<number>(search.shares ?? 10);
   const [customMode, setCustomMode] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [gateOpen, setGateOpen] = useState(false);
