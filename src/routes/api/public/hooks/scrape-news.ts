@@ -3,9 +3,13 @@ import { requireCronSecret } from "@/lib/server/cron-auth";
 import { createClient } from "@supabase/supabase-js";
 import { logPipelineFailure } from "@/lib/server/pipeline-alerts";
 
-// Kenyan + African news RSS sources — only sources confirmed to deliver stories
+// Kenyan + African news RSS sources — all free, all live-verified.
+// Probe 2026-09-23: Citizen (HTTP 400), Pulse Live (404), Viral Tea (404),
+// AllAfrica (fetch failed) and Capital FM/Business/Sports (fetch failed)
+// are dead; dropped. Added The Eastleigh Voice, Nairobi Gazette,
+// Premium Times, Punch Nigeria, Vanguard Nigeria, TechCabal.
 const FEEDS: Array<{ source: string; url: string; defaultCategory?: string }> = [
-  // === Mainstream & high-traffic ===
+  // === Kenya mainstream & high-traffic ===
   { source: "Standard Media", url: "https://www.standardmedia.co.ke/rss/headlines.php" },
   { source: "Standard Politics", url: "https://www.standardmedia.co.ke/rss/politics.php", defaultCategory: "politics" },
   { source: "Standard Sports", url: "https://www.standardmedia.co.ke/rss/sports.php", defaultCategory: "sports" },
@@ -13,24 +17,22 @@ const FEEDS: Array<{ source: string; url: string; defaultCategory?: string }> = 
   { source: "Standard Entertainment", url: "https://www.standardmedia.co.ke/rss/entertainment.php", defaultCategory: "entertainment" },
   { source: "Nation Africa", url: "https://nation.africa/kenya/rss.xml" },
   { source: "Business Daily", url: "https://www.businessdailyafrica.com/bd/rss.xml", defaultCategory: "economics" },
-  { source: "Citizen Digital", url: "https://citizen.digital/feed" },
-  // === Fast digital / viral / breaking ===
+  { source: "The Eastleigh Voice", url: "https://eastleighvoice.co.ke/feed" },
+  // === Kenya fast digital / viral / breaking ===
   { source: "Tuko News", url: "https://www.tuko.co.ke/rss/all.rss" },
   { source: "Kenyans.co.ke", url: "https://www.kenyans.co.ke/feeds/news" },
-  { source: "Pulse Live Kenya", url: "https://www.pulse.co.ke/rss" },
   { source: "Nairobi Wire", url: "https://nairobiwire.com/feed" },
-  { source: "Viral Tea", url: "https://viraltea.co.ke/feed/" },
-  // === Aggregators ===
-  { source: "AllAfrica Kenya", url: "https://allafrica.com/tools/headlines/rdf/kenya/headlines.rdf" },
-  // === Entertainment / lifestyle ===
+  { source: "Nairobi Gazette", url: "https://nairobiwire.com/category/news/feed" },
+  // === Kenya entertainment / lifestyle ===
   { source: "Ghafla", url: "https://www.ghafla.com/ke/feed/", defaultCategory: "entertainment" },
-  // === Niche ===
-  { source: "Capital FM", url: "https://www.capitalfm.co.ke/news/feed/" },
-  { source: "Capital Business", url: "https://www.capitalfm.co.ke/business/feed/", defaultCategory: "economics" },
-  { source: "Capital Sports", url: "https://www.capitalfm.co.ke/sports/feed/", defaultCategory: "sports" },
   { source: "Kahawa Tungu", url: "https://kahawatungu.com/feed/" },
   // === Africa coverage ===
   { source: "BBC Africa", url: "https://feeds.bbci.co.uk/news/world/africa/rss.xml" },
+  { source: "Premium Times", url: "https://www.premiumtimesng.com/feed" },
+  { source: "Punch Nigeria", url: "https://punchng.com/feed/" },
+  { source: "Vanguard Nigeria", url: "https://www.vanguardngr.com/feed/" },
+  // === Tech / business ===
+  { source: "TechCabal", url: "https://techcabal.com/feed/", defaultCategory: "economics" },
 ];
 
 const KENYA_KEYWORDS = ["kenya", "kenyan", "nairobi", "mombasa", "kisumu", "ruto", "raila", "harambee", "mpesa", "m-pesa", "iebc", "shilling", "ksh"];
