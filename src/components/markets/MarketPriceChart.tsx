@@ -45,33 +45,19 @@ export function MarketPriceChart({ points, height = 220, className }: Props) {
     return { values, min, max, range: Math.max(0.001, max - min) };
   }, [points]);
 
-  if (!data) {
-    return (
-      <div ref={containerRef} className={className} style={{ height }} role="img" aria-label="Not enough price data">
-        <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
-          Not enough price data yet
-        </div>
-      </div>
-    );
-  }
-
   const H = height;
   const padX = 40;
   const padY = 18;
   const innerW = Math.max(50, W - padX * 2);
   const innerH = H - padY * 2;
 
-  const stepX = innerW / (data.values.length - 1);
-  const yFor = (v: number) => padY + (1 - (v - data.min) / data.range) * innerH;
-
-  const first = data.values[0];
-  const last = data.values[data.values.length - 1];
-  const change = last - first;
-  const flat = Math.abs(change) < 0.005;
-  const up = change > 0;
-  const lineColor = flat ? "oklch(0.65 0.02 280)" : up ? "oklch(0.78 0.22 150)" : "oklch(0.65 0.24 25)";
+  // Null-safe geometry: hooks must run on every render, so these tolerate
+  // data === null (the component early-returns below in that case).
+  const stepX = innerW / Math.max(1, (data?.values.length ?? 2) - 1);
+  const yFor = (v: number) => padY + (1 - (v - (data?.min ?? 0)) / (data?.range ?? 1)) * innerH;
 
   const linePath = useMemo(() => {
+    if (!data) return "";
     const pts = data.values.map((v, i) => [padX + i * stepX, yFor(v)] as const);
     if (pts.length < 2) return "";
     let d = `M${pts[0][0].toFixed(2)},${pts[0][1].toFixed(2)}`;
@@ -89,6 +75,33 @@ export function MarketPriceChart({ points, height = 220, className }: Props) {
     return d;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, stepX, W]);
+
+  if (!data) {
+    return (
+      <div
+        ref={containerRef}
+        className={className}
+        style={{ height }}
+        role="img"
+        aria-label="Not enough price data"
+      >
+        <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
+          Not enough price data yet
+        </div>
+      </div>
+    );
+  }
+
+  const first = data.values[0];
+  const last = data.values[data.values.length - 1];
+  const change = last - first;
+  const flat = Math.abs(change) < 0.005;
+  const up = change > 0;
+  const lineColor = flat
+    ? "oklch(0.65 0.02 280)"
+    : up
+      ? "oklch(0.78 0.22 150)"
+      : "oklch(0.65 0.24 25)";
 
   const areaPath = `${linePath} L${(padX + (data.values.length - 1) * stepX).toFixed(2)},${(padY + innerH).toFixed(2)} L${padX},${(padY + innerH).toFixed(2)} Z`;
 
@@ -114,7 +127,12 @@ export function MarketPriceChart({ points, height = 220, className }: Props) {
 
   const hoverPoint =
     hover !== null
-      ? { x: padX + hover * stepX, y: yFor(data.values[hover]), v: data.values[hover], t: points[hover].recorded_at }
+      ? {
+          x: padX + hover * stepX,
+          y: yFor(data.values[hover]),
+          v: data.values[hover],
+          t: points[hover].recorded_at,
+        }
       : null;
 
   const gradId = up ? "mpc-up" : flat ? "mpc-flat" : "mpc-down";

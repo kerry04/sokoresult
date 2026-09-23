@@ -82,14 +82,14 @@
   --accent-foreground: oklch(0.95 0.01 280);
 
   /* Trading semantics */
-  --success: oklch(0.78 0.22 150);          /* #00E676 */
+  --success: oklch(0.78 0.22 150); /* #00E676 */
   --success-foreground: oklch(0.13 0.02 280);
-  --destructive: oklch(0.65 0.24 25);       /* #FF5252 */
+  --destructive: oklch(0.65 0.24 25); /* #FF5252 */
   --destructive-foreground: oklch(0.98 0.005 280);
-  --warning: oklch(0.82 0.18 80);           /* #FFB300 */
+  --warning: oklch(0.82 0.18 80); /* #FFB300 */
   --warning-foreground: oklch(0.13 0.02 280);
-  --mpesa: oklch(0.65 0.18 145);            /* #4CAF50 */
-  --accent-pink: oklch(0.74 0.22 350);      /* hot magenta accent from brand */
+  --mpesa: oklch(0.65 0.18 145); /* #4CAF50 */
+  --accent-pink: oklch(0.74 0.22 350); /* hot magenta accent from brand */
 
   --border: oklch(0.3 0.03 280);
   --input: oklch(0.27 0.03 280);
@@ -110,7 +110,8 @@
   --sidebar-border: oklch(0.27 0.03 280);
   --sidebar-ring: oklch(0.55 0.22 305);
 
-  --gradient-hero: radial-gradient(
+  --gradient-hero:
+    radial-gradient(
       ellipse at top,
       color-mix(in oklab, var(--primary) 35%, transparent) 0%,
       transparent 60%
@@ -149,7 +150,8 @@
     font-feature-settings: "tnum", "zero";
   }
 
-  html, body {
+  html,
+  body {
     max-width: 100vw;
   }
 
@@ -160,8 +162,13 @@
   }
 
   /* Sleek scrollbar */
-  ::-webkit-scrollbar { width: 10px; height: 10px; }
-  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
   ::-webkit-scrollbar-thumb {
     background: var(--color-border);
     border-radius: 8px;
@@ -205,33 +212,58 @@
 @utility bg-grid-lines {
   background-image:
     linear-gradient(color-mix(in oklab, var(--foreground) 6%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in oklab, var(--foreground) 6%, transparent) 1px, transparent 1px);
+    linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--foreground) 6%, transparent) 1px,
+      transparent 1px
+    );
   background-size: 56px 56px;
 }
 
 @keyframes ticker {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 .animate-ticker {
   animation: ticker 40s linear infinite;
 }
 
 @keyframes price-pulse {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.55; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
 }
 .animate-price-pulse {
   animation: price-pulse 1.6s ease-in-out infinite;
 }
 
 /* Trading semantic utilities */
-@utility text-up { color: var(--color-success); }
-@utility text-down { color: var(--color-destructive); }
-@utility text-flat { color: var(--color-muted-foreground); }
-@utility bg-up-soft { background-color: color-mix(in oklab, var(--color-success) 14%, transparent); }
-@utility bg-down-soft { background-color: color-mix(in oklab, var(--color-destructive) 14%, transparent); }
-@utility bg-flat-soft { background-color: color-mix(in oklab, var(--color-muted-foreground) 12%, transparent); }
+@utility text-up {
+  color: var(--color-success);
+}
+@utility text-down {
+  color: var(--color-destructive);
+}
+@utility text-flat {
+  color: var(--color-muted-foreground);
+}
+@utility bg-up-soft {
+  background-color: color-mix(in oklab, var(--color-success) 14%, transparent);
+}
+@utility bg-down-soft {
+  background-color: color-mix(in oklab, var(--color-destructive) 14%, transparent);
+}
+@utility bg-flat-soft {
+  background-color: color-mix(in oklab, var(--color-muted-foreground) 12%, transparent);
+}
 
 /* Dense numeric utilities */
 @utility num {
@@ -249,17 +281,54 @@
 }
 
 /* Hide scrollbar utility (used by mobile ticker) */
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Respect reduced motion: kill ambient/ticker animation, keep opacity-only fades. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-ticker,
+  .animate-price-pulse {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Visible keyboard focus everywhere */
+:focus-visible {
+  outline: 2px solid var(--color-success);
+  outline-offset: 2px;
+}
 
 /* Direction flash for price-change cells */
 @keyframes flash-up {
-  0% { background-color: color-mix(in oklab, var(--color-success) 18%, transparent); }
-  100% { background-color: transparent; }
+  0% {
+    background-color: color-mix(in oklab, var(--color-success) 18%, transparent);
+  }
+  100% {
+    background-color: transparent;
+  }
 }
 @keyframes flash-down {
-  0% { background-color: color-mix(in oklab, var(--color-destructive) 18%, transparent); }
-  100% { background-color: transparent; }
+  0% {
+    background-color: color-mix(in oklab, var(--color-destructive) 18%, transparent);
+  }
+  100% {
+    background-color: transparent;
+  }
 }
-.flash-up { animation: flash-up 600ms ease-out; }
-.flash-down { animation: flash-down 600ms ease-out; }
+.flash-up {
+  animation: flash-up 600ms ease-out;
+}
+.flash-down {
+  animation: flash-down 600ms ease-out;
+}

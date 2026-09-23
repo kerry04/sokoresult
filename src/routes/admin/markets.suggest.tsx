@@ -4,7 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select, SelectTrigger, SelectContent, SelectItem, SelectValue,
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,8 +24,12 @@ export const Route = createFileRoute("/admin/markets/suggest")({
 interface PersistedSuggestion extends QuantSuggestion {
   id: string;
   sources: Array<{
-    id: string; title: string; source: string; url: string;
-    sentiment_score: number | null; published_at: string;
+    id: string;
+    title: string;
+    source: string;
+    url: string;
+    sentiment_score: number | null;
+    published_at: string;
   }>;
 }
 
@@ -46,7 +54,9 @@ function SuggestMarketPage() {
       const since = new Date(Date.now() - Number(days) * 86_400_000).toISOString();
       const { data: news } = await supabase
         .from("raw_news_data")
-        .select("id, title, body, source, url, sentiment_score, published_at, relevant_keywords, entities")
+        .select(
+          "id, title, body, source, url, sentiment_score, published_at, relevant_keywords, entities",
+        )
         .gte("published_at", since)
         .order("published_at", { ascending: false })
         .limit(80);
@@ -55,11 +65,15 @@ function SuggestMarketPage() {
       const matched = (news ?? []).filter((n: any) => {
         const blob = `${n.title} ${n.body ?? ""}`.toLowerCase();
         if (blob.includes(lowered)) return true;
-        return (n.relevant_keywords ?? []).some((k: string) => k.includes(lowered) || lowered.includes(k));
+        return (n.relevant_keywords ?? []).some(
+          (k: string) => k.includes(lowered) || lowered.includes(k),
+        );
       });
 
       if (matched.length === 0) {
-        toast.error("No recent news for this topic. Try a broader keyword or wait for the scraper.");
+        toast.error(
+          "No recent news for this topic. Try a broader keyword or wait for the scraper.",
+        );
         setLoading(false);
         return;
       }
@@ -86,7 +100,9 @@ function SuggestMarketPage() {
         return;
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
       const persisted: PersistedSuggestion[] = [];
       for (const s of suggestions) {
@@ -122,8 +138,12 @@ function SuggestMarketPage() {
           .filter((m: any) => s.source_article_ids.includes(m.id))
           .slice(0, 8)
           .map((m: any) => ({
-            id: m.id, title: m.title, source: m.source, url: m.url,
-            sentiment_score: m.sentiment_score, published_at: m.published_at,
+            id: m.id,
+            title: m.title,
+            source: m.source,
+            url: m.url,
+            sentiment_score: m.sentiment_score,
+            published_at: m.published_at,
           }));
 
         persisted.push({ ...s, id: (saved as any).id, sources: sourceArticles });
@@ -137,7 +157,7 @@ function SuggestMarketPage() {
     }
   };
 
-  const useSuggestion = (s: PersistedSuggestion) => {
+  const applySuggestion = (s: PersistedSuggestion) => {
     const params = new URLSearchParams({
       question: s.market_question,
       category: s.category,
@@ -156,7 +176,8 @@ function SuggestMarketPage() {
           <Sparkles className="h-5 w-5 text-primary" /> Quant market suggester
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Clusters recent news, computes a sentiment-derived prior, and ranks ideas by edge potential.
+          Clusters recent news, computes a sentiment-derived prior, and ranks ideas by edge
+          potential.
         </p>
       </header>
 
@@ -175,7 +196,9 @@ function SuggestMarketPage() {
           <div>
             <Label>Window</Label>
             <Select value={days} onValueChange={setDays}>
-              <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="mt-1.5">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="1">Last 24h</SelectItem>
                 <SelectItem value="7">Last 7d</SelectItem>
@@ -183,8 +206,16 @@ function SuggestMarketPage() {
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={generate} disabled={loading} className="bg-primary text-primary-foreground hover:bg-primary/90">
-            {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Wand2 className="h-4 w-4 mr-2" />}
+          <Button
+            onClick={generate}
+            disabled={loading}
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Wand2 className="h-4 w-4 mr-2" />
+            )}
             Generate
           </Button>
         </div>
@@ -197,7 +228,7 @@ function SuggestMarketPage() {
 
       <div className="grid gap-4">
         {results.map((s) => (
-          <SuggestionCard key={s.id} s={s} onUse={() => useSuggestion(s)} />
+          <SuggestionCard key={s.id} s={s} onUse={() => applySuggestion(s)} />
         ))}
       </div>
     </div>
@@ -212,14 +243,23 @@ function SuggestionCard({ s, onUse }: { s: PersistedSuggestion; onUse: () => voi
   return (
     <Card className="p-6 space-y-5 border-success/40 bg-gradient-to-b from-success/5 to-transparent">
       <div className="flex items-center gap-2 flex-wrap">
-        <Badge className="bg-success/20 text-success border-success/40 capitalize">{s.category}</Badge>
-        <Badge variant="outline" className="capitalize">{s.event_type.replace("_", " ")}</Badge>
+        <Badge className="bg-success/20 text-success border-success/40 capitalize">
+          {s.category}
+        </Badge>
+        <Badge variant="outline" className="capitalize">
+          {s.event_type.replace("_", " ")}
+        </Badge>
         <Badge variant="outline" className="capitalize flex items-center gap-1">
           <Clock className="h-3 w-3" /> {s.horizon}
         </Badge>
         {s.deadline && (
           <Badge variant="outline">
-            Closes {new Date(s.deadline).toLocaleDateString("en-KE", { month: "short", day: "numeric", year: "numeric" })}
+            Closes{" "}
+            {new Date(s.deadline).toLocaleDateString("en-KE", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
           </Badge>
         )}
       </div>
@@ -249,7 +289,9 @@ function SuggestionCard({ s, onUse }: { s: PersistedSuggestion; onUse: () => voi
       {s.key_entities.length > 0 && (
         <div className="flex items-center gap-1.5 flex-wrap">
           {s.key_entities.map((e) => (
-            <Badge key={e} variant="secondary" className="text-xs">{e}</Badge>
+            <Badge key={e} variant="secondary" className="text-xs">
+              {e}
+            </Badge>
           ))}
         </div>
       )}
@@ -283,7 +325,9 @@ function SuggestionCard({ s, onUse }: { s: PersistedSuggestion; onUse: () => voi
                 <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
                   <span className="font-bold text-primary">{src.source}</span>
                   {src.sentiment_score !== null && (
-                    <span className={src.sentiment_score >= 0 ? "text-success" : "text-destructive"}>
+                    <span
+                      className={src.sentiment_score >= 0 ? "text-success" : "text-destructive"}
+                    >
                       sentiment {src.sentiment_score.toFixed(2)}
                     </span>
                   )}
@@ -295,7 +339,10 @@ function SuggestionCard({ s, onUse }: { s: PersistedSuggestion; onUse: () => voi
         </div>
       )}
 
-      <Button onClick={onUse} className="bg-success text-success-foreground hover:bg-success/90 w-full sm:w-auto">
+      <Button
+        onClick={onUse}
+        className="bg-success text-success-foreground hover:bg-success/90 w-full sm:w-auto"
+      >
         Create market with these values →
       </Button>
     </Card>

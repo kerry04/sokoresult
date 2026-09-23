@@ -9,7 +9,11 @@ import { BackButton } from "@/components/common/BackButton";
 import { CandidateList, type OutcomeRow } from "@/components/markets/CandidateList";
 import { SellPanel } from "@/components/markets/SellPanel";
 
-import { VerificationGateModal, FirstTradeWarning } from "@/components/markets/VerificationGateModal";
+import { ProbabilityNote } from "@/components/markets/ProbabilityNote";
+import {
+  VerificationGateModal,
+  FirstTradeWarning,
+} from "@/components/markets/VerificationGateModal";
 import { MarketActivityStrip } from "@/components/engagement/MarketActivityStrip";
 import { LiveTradeStream } from "@/components/engagement/LiveTradeStream";
 import { CountdownPill } from "@/components/engagement/CountdownPill";
@@ -39,7 +43,12 @@ import {
   formatTimeRemaining,
 } from "@/lib/format";
 
-type MarketSearch = { side?: "YES" | "NO"; amount?: number; tab?: "buy" | "sell"; outcome?: string };
+type MarketSearch = {
+  side?: "YES" | "NO";
+  amount?: number;
+  tab?: "buy" | "sell";
+  outcome?: string;
+};
 
 export const Route = createFileRoute("/_authed/markets/$slug")({
   head: () => ({ meta: [{ title: "Market — SokoResult" }] }),
@@ -47,7 +56,8 @@ export const Route = createFileRoute("/_authed/markets/$slug")({
     const sideRaw = String(search.side ?? "").toUpperCase();
     const side = sideRaw === "YES" || sideRaw === "NO" ? (sideRaw as "YES" | "NO") : undefined;
     const amountNum = Number(search.amount);
-    const amount = Number.isFinite(amountNum) && amountNum > 0 ? Math.min(amountNum, 1_000_000) : undefined;
+    const amount =
+      Number.isFinite(amountNum) && amountNum > 0 ? Math.min(amountNum, 1_000_000) : undefined;
     const tabRaw = String(search.tab ?? "").toLowerCase();
     const tab = tabRaw === "sell" || tabRaw === "buy" ? (tabRaw as "buy" | "sell") : undefined;
     const outcomeRaw = typeof search.outcome === "string" ? search.outcome : undefined;
@@ -149,7 +159,12 @@ function MarketDetailPage() {
       )
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "price_history", filter: `market_id=eq.${market.id}` },
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "price_history",
+          filter: `market_id=eq.${market.id}`,
+        },
         (payload) => {
           const p = payload.new as PricePoint;
           setHistory((h) => [...h, p]);
@@ -157,12 +172,15 @@ function MarketDetailPage() {
       )
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "market_outcomes", filter: `market_id=eq.${market.id}` },
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "market_outcomes",
+          filter: `market_id=eq.${market.id}`,
+        },
         (payload) => {
           const u = payload.new as OutcomeRow;
-          setOutcomes((prev) =>
-            prev.map((o) => (o.id === u.id ? { ...o, ...u } : o)),
-          );
+          setOutcomes((prev) => prev.map((o) => (o.id === u.id ? { ...o, ...u } : o)));
         },
       )
       .subscribe();
@@ -208,7 +226,12 @@ function MarketDetailPage() {
               </Badge>
               {market.closes_at && (
                 <Badge variant="outline" className="text-[10px]">
-                  Closes {new Date(market.closes_at).toLocaleDateString("en-KE", { month: "short", day: "numeric", year: "numeric" })}
+                  Closes{" "}
+                  {new Date(market.closes_at).toLocaleDateString("en-KE", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
                 </Badge>
               )}
               <CountdownPill closesAt={market.closes_at} />
@@ -230,7 +253,9 @@ function MarketDetailPage() {
             {market.market_type === "multi" ? (
               <div className="mt-3 sm:mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                 <div className="min-w-0">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Leading</div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Leading
+                  </div>
                   <div className="num text-primary text-sm sm:text-base font-bold truncate">
                     {outcomes[0]?.label ?? "—"}{" "}
                     <span className="text-xs">
@@ -239,39 +264,77 @@ function MarketDetailPage() {
                   </div>
                 </div>
                 <div className="min-w-0">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Volume</div>
-                  <div className="num text-base sm:text-lg font-bold truncate">{formatKESCompact(market.volume_cents)}</div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Volume
+                  </div>
+                  <div className="num text-base sm:text-lg font-bold truncate">
+                    {formatKESCompact(market.volume_cents)}
+                  </div>
                 </div>
                 <div className="hidden sm:block min-w-0">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Traders</div>
-                  <div className="num text-base sm:text-lg font-bold truncate">{formatNumberCompact(market.trader_count)}</div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Traders
+                  </div>
+                  <div className="num text-base sm:text-lg font-bold truncate">
+                    {formatNumberCompact(market.trader_count)}
+                  </div>
                 </div>
-                <div className="hidden sm:block min-w-0" title="Initial liquidity provided by the market maker. Larger = more stable price.">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Depth</div>
-                  <div className="num text-base sm:text-lg font-bold truncate">{formatKESCompact(Number(market.liquidity_b) * 1000)}</div>
+                <div
+                  className="hidden sm:block min-w-0"
+                  title="Initial liquidity provided by the market maker. Larger = more stable price."
+                >
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Depth
+                  </div>
+                  <div className="num text-base sm:text-lg font-bold truncate">
+                    {formatKESCompact(Number(market.liquidity_b) * 1000)}
+                  </div>
                 </div>
               </div>
             ) : (
               <div className="mt-3 sm:mt-4 grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3">
                 <div className="min-w-0">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">YES</div>
-                  <div className="num text-success text-lg sm:text-xl font-bold truncate">{formatPercent(Number(market.yes_price))}</div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                    YES <ProbabilityNote price={Number(market.yes_price)} />
+                  </div>
+                  <div className="num text-success text-lg sm:text-xl font-bold truncate">
+                    {formatPercent(Number(market.yes_price))}
+                  </div>
                 </div>
                 <div className="min-w-0">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">NO</div>
-                  <div className="num text-destructive text-lg sm:text-xl font-bold truncate">{formatPercent(Number(market.no_price))}</div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    NO
+                  </div>
+                  <div className="num text-destructive text-lg sm:text-xl font-bold truncate">
+                    {formatPercent(Number(market.no_price))}
+                  </div>
                 </div>
                 <div className="min-w-0">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Volume</div>
-                  <div className="num text-base sm:text-lg font-bold truncate">{formatKESCompact(market.volume_cents)}</div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Volume
+                  </div>
+                  <div className="num text-base sm:text-lg font-bold truncate">
+                    {formatKESCompact(market.volume_cents)}
+                  </div>
                 </div>
                 <div className="hidden sm:block min-w-0">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Traders</div>
-                  <div className="num text-base sm:text-lg font-bold truncate">{formatNumberCompact(market.trader_count)}</div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Traders
+                  </div>
+                  <div className="num text-base sm:text-lg font-bold truncate">
+                    {formatNumberCompact(market.trader_count)}
+                  </div>
                 </div>
-                <div className="hidden sm:block min-w-0" title="Initial liquidity provided by the market maker. Larger = more stable price.">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Depth</div>
-                  <div className="num text-base sm:text-lg font-bold truncate">{formatKESCompact(Number(market.liquidity_b) * 1000)}</div>
+                <div
+                  className="hidden sm:block min-w-0"
+                  title="Initial liquidity provided by the market maker. Larger = more stable price."
+                >
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Depth
+                  </div>
+                  <div className="num text-base sm:text-lg font-bold truncate">
+                    {formatKESCompact(Number(market.liquidity_b) * 1000)}
+                  </div>
                 </div>
               </div>
             )}
@@ -292,7 +355,9 @@ function MarketDetailPage() {
                       onClick={() => setRange(r.key)}
                       className={cn(
                         "px-2 py-1 text-[11px] font-mono rounded min-h-[28px]",
-                        range === r.key ? "bg-primary/30 text-foreground" : "text-muted-foreground hover:text-foreground",
+                        range === r.key
+                          ? "bg-primary/30 text-foreground"
+                          : "text-muted-foreground hover:text-foreground",
                       )}
                     >
                       {r.key}
@@ -436,8 +501,12 @@ function MobileTradeBar({
       >
         <div className="px-4 py-2.5 flex items-center justify-between gap-2">
           <div className="flex gap-3 num text-sm">
-            <span className="text-success font-bold">YES {formatPrice(Number(market.yes_price))}</span>
-            <span className="text-destructive font-bold">NO {formatPrice(Number(market.no_price))}</span>
+            <span className="text-success font-bold">
+              YES {formatPrice(Number(market.yes_price))}
+            </span>
+            <span className="text-destructive font-bold">
+              NO {formatPrice(Number(market.no_price))}
+            </span>
           </div>
           <Button
             size="sm"
@@ -449,7 +518,10 @@ function MobileTradeBar({
         </div>
       </div>
       {open && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" onClick={() => setOpen(false)}>
+        <div
+          className="lg:hidden fixed inset-0 z-50 bg-background/80 backdrop-blur-sm"
+          onClick={() => setOpen(false)}
+        >
           <div
             className="absolute bottom-0 inset-x-0 max-h-[92vh] overflow-y-auto rounded-t-3xl border-t border-border bg-background p-4"
             style={{ paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}
@@ -469,9 +541,7 @@ const PRESET_SHARES = [1, 5, 10, 25, 50, 100];
 function TradePanel({ market, balance }: { market: Market; balance: number }) {
   const { user, profile, refreshProfile, enqueueAchievements } = useAuth();
   const search = Route.useSearch();
-  const [outcome, setOutcome] = useState<"yes" | "no">(
-    search.side === "NO" ? "no" : "yes",
-  );
+  const [outcome, setOutcome] = useState<"yes" | "no">(search.side === "NO" ? "no" : "yes");
   const [shares, setShares] = useState<number>(10);
   const [customMode, setCustomMode] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -581,7 +651,9 @@ function TradePanel({ market, balance }: { market: Market; balance: number }) {
         >
           <div className="text-lg sm:text-xl">👍</div>
           <div className="text-[10px] uppercase tracking-wider text-success/80 mt-0.5">YES</div>
-          <div className="font-mono text-success text-base sm:text-lg font-bold truncate">KSh {yesPct.toFixed(0)}</div>
+          <div className="font-mono text-success text-base sm:text-lg font-bold truncate">
+            KSh {yesPct.toFixed(0)}
+          </div>
           <div className="text-[10px] text-muted-foreground mt-0.5 truncate">
             {yesLongshot ? "Too unlikely" : `${yesPct.toFixed(0)}% chance`}
           </div>
@@ -600,7 +672,9 @@ function TradePanel({ market, balance }: { market: Market; balance: number }) {
         >
           <div className="text-lg sm:text-xl">👎</div>
           <div className="text-[10px] uppercase tracking-wider text-destructive/80 mt-0.5">NO</div>
-          <div className="font-mono text-destructive text-base sm:text-lg font-bold truncate">KSh {noPct.toFixed(0)}</div>
+          <div className="font-mono text-destructive text-base sm:text-lg font-bold truncate">
+            KSh {noPct.toFixed(0)}
+          </div>
           <div className="text-[10px] text-muted-foreground mt-0.5 truncate">
             {noLongshot ? "Too unlikely" : `${noPct.toFixed(0)}% chance`}
           </div>
@@ -656,10 +730,14 @@ function TradePanel({ market, balance }: { market: Market; balance: number }) {
         )}
         <div className="text-xs text-muted-foreground pt-1 flex justify-between gap-2">
           <span className="truncate">
-            Price/share: <span className="font-mono font-semibold text-foreground">KSh {priceKsh.toFixed(0)}</span>
+            Price/share:{" "}
+            <span className="font-mono font-semibold text-foreground">
+              KSh {priceKsh.toFixed(0)}
+            </span>
           </span>
           <span className="truncate">
-            Balance: <span className="font-mono font-semibold text-foreground">{formatKES(balance)}</span>
+            Balance:{" "}
+            <span className="font-mono font-semibold text-foreground">{formatKES(balance)}</span>
           </span>
         </div>
       </div>
@@ -684,7 +762,9 @@ function TradePanel({ market, balance }: { market: Market; balance: number }) {
           </div>
           <div className="flex justify-between pt-1 border-t border-border/60 gap-2">
             <span className="text-muted-foreground truncate">Profit:</span>
-            <span className="font-mono font-bold text-success">+KSh {profitKsh.toLocaleString()}</span>
+            <span className="font-mono font-bold text-success">
+              +KSh {profitKsh.toLocaleString()}
+            </span>
           </div>
         </div>
         <div className="text-[10px] text-muted-foreground pt-1 flex items-center justify-between gap-2 flex-wrap">
@@ -712,12 +792,15 @@ function TradePanel({ market, balance }: { market: Market; balance: number }) {
             : currentLongshot
               ? "Too unlikely to trade"
               : notEnough
-                ? `Need KSh ${(Math.ceil((totalCents - balance) / 100)).toLocaleString()} more`
+                ? `Need KSh ${Math.ceil((totalCents - balance) / 100).toLocaleString()} more`
                 : `Buy ${shares} ${outcome.toUpperCase()} for KSh ${totalKsh.toLocaleString()}`}
       </Button>
       <p className="text-[11px] text-center text-muted-foreground">
         By trading, you agree to the{" "}
-        <Link to="/learn/disclaimer" className="underline hover:text-foreground">rules</Link>.
+        <Link to="/learn/disclaimer" className="underline hover:text-foreground">
+          rules
+        </Link>
+        .
       </p>
 
       <VerificationGateModal open={gateOpen} onOpenChange={setGateOpen} />
@@ -763,7 +846,7 @@ function CommentsSection({ marketId, userId }: { marketId: string; userId: strin
       created_at: string;
     }>;
     const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
-    let nameMap: Record<string, string | null> = {};
+    const nameMap: Record<string, string | null> = {};
     if (userIds.length) {
       const { data: profs } = await supabase
         .from("profiles_public")
@@ -861,7 +944,10 @@ function CommentsSection({ marketId, userId }: { marketId: string; userId: strin
               <div className="flex items-baseline gap-2 flex-wrap">
                 <span className="text-sm font-semibold truncate">{c.display_name ?? "trader"}</span>
                 <span className="text-xs text-muted-foreground">
-                  {new Date(c.created_at).toLocaleDateString("en-KE", { month: "short", day: "numeric" })}
+                  {new Date(c.created_at).toLocaleDateString("en-KE", {
+                    month: "short",
+                    day: "numeric",
+                  })}
                 </span>
               </div>
               <p className="mt-1 text-sm text-foreground/90 whitespace-pre-wrap break-words">

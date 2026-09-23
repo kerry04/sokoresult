@@ -81,4 +81,13 @@ export const CATEGORY_LABEL: Record<string, string> = {
   sports: "Sports",
   entertainment: "Entertainment",
   economics: "Economics",
+  kenya_politics: "Kenya Politics",
+  elections: "Elections",
+  epl: "EPL",
+  harambee_stars: "Harambee Stars",
+  business: "Business",
+  economy: "Economy",
+  technology: "Technology",
+  africa: "Africa",
+  crypto: "Crypto",
 };

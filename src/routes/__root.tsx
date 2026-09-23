@@ -47,10 +47,14 @@ export const Route = createRootRoute({
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: "SokoResult — Africa's Prediction Market" },
       { name: "description", content: "Africa's rising prediction market and news platform" },
-      { property: "og:description", content: "Africa's rising prediction market and news platform" },
-      { name: "twitter:description", content: "Africa's rising prediction market and news platform" },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/515ab04f-b3d4-48c9-816e-03d3e17eb860" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/515ab04f-b3d4-48c9-816e-03d3e17eb860" },
+      {
+        property: "og:description",
+        content: "Africa's rising prediction market and news platform",
+      },
+      {
+        name: "twitter:description",
+        content: "Africa's rising prediction market and news platform",
+      },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
