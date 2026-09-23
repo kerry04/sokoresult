@@ -1,172 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { requireCronSecret } from "@/lib/server/cron-auth";
 import { createClient } from "@supabase/supabase-js";
-import { logPipelineFailure } from "@/lib/server/pipeline-alerts";
+import { OUTLETS, ingestOutlet, type Article } from "@/lib/server/news/ingestors";
 
-// Kenyan + African news RSS sources — all free, all live-verified.
-// Probe 2026-09-23: Citizen (HTTP 400), Pulse Live (404), Viral Tea (404),
-// AllAfrica (fetch failed) and Capital FM/Business/Sports (fetch failed)
-// are dead; dropped. Added The Eastleigh Voice, Nairobi Gazette,
-// Premium Times, Punch Nigeria, Vanguard Nigeria, TechCabal.
-const FEEDS: Array<{ source: string; url: string; defaultCategory?: string }> = [
-  // === Kenya mainstream & high-traffic ===
-  { source: "Standard Media", url: "https://www.standardmedia.co.ke/rss/headlines.php" },
-  { source: "Standard Politics", url: "https://www.standardmedia.co.ke/rss/politics.php", defaultCategory: "politics" },
-  { source: "Standard Sports", url: "https://www.standardmedia.co.ke/rss/sports.php", defaultCategory: "sports" },
-  { source: "Standard Business", url: "https://www.standardmedia.co.ke/rss/business.php", defaultCategory: "economics" },
-  { source: "Standard Entertainment", url: "https://www.standardmedia.co.ke/rss/entertainment.php", defaultCategory: "entertainment" },
-  { source: "Nation Africa", url: "https://nation.africa/kenya/rss.xml" },
-  { source: "Business Daily", url: "https://www.businessdailyafrica.com/bd/rss.xml", defaultCategory: "economics" },
-  { source: "The Eastleigh Voice", url: "https://eastleighvoice.co.ke/feed" },
-  // === Kenya fast digital / viral / breaking ===
-  { source: "Tuko News", url: "https://www.tuko.co.ke/rss/all.rss" },
-  { source: "Kenyans.co.ke", url: "https://www.kenyans.co.ke/feeds/news" },
-  { source: "Nairobi Wire", url: "https://nairobiwire.com/feed" },
-  { source: "Nairobi Gazette", url: "https://nairobiwire.com/category/news/feed" },
-  // === Kenya entertainment / lifestyle ===
-  { source: "Ghafla", url: "https://www.ghafla.com/ke/feed/", defaultCategory: "entertainment" },
-  { source: "Kahawa Tungu", url: "https://kahawatungu.com/feed/" },
-  // === Africa coverage ===
-  { source: "BBC Africa", url: "https://feeds.bbci.co.uk/news/world/africa/rss.xml" },
-  { source: "Premium Times", url: "https://www.premiumtimesng.com/feed" },
-  { source: "Punch Nigeria", url: "https://punchng.com/feed/" },
-  { source: "Vanguard Nigeria", url: "https://www.vanguardngr.com/feed/" },
-  // === Tech / business ===
-  { source: "TechCabal", url: "https://techcabal.com/feed/", defaultCategory: "economics" },
-];
+// Kenyan news ingestion — config-driven, 4 ingestor code paths, 18 outlets.
+// See src/lib/server/news/ingestors.ts (spec: kenyan-news-sources.md).
+// Cadence: fired by pg_cron on the 15-min cycle; outlets are fetched
+// sequentially with a small stagger so we never burst-request the same host.
 
-const KENYA_KEYWORDS = ["kenya", "kenyan", "nairobi", "mombasa", "kisumu", "ruto", "raila", "harambee", "mpesa", "m-pesa", "iebc", "shilling", "ksh"];
-
-// Buzzword-based auto-categorization. Order matters: first match wins for ties,
-// but we score per category and pick the highest.
-const CATEGORY_BUZZWORDS: Record<string, string[]> = {
-  politics: [
-    "ruto", "raila", "gachagua", "uhuru", "kenyatta", "odinga", "uda", "odm", "azimio",
-    "mp ", "senator", "governor", "cabinet", "cs ", "parliament", "national assembly",
-    "iebc", "ballot", "election", "referendum", "impeach", "bill", "gazette", "policy",
-    "presiden", "minister", "speaker", "constitution", "protest", "demo ", "maandamano",
-    "duale", "kindiki", "mudavadi", "wetangula", "kalonzo", "matiangi", "haki",
-  ],
-  sports: [
-    "harambee stars", "afcon", "cecafa", "kpl", "fkf", "world cup", "premier league",
-    "fixture", "goal", "striker", "coach", "match", "tournament", "olympic", "marathon",
-    "athletic", "rugby", "shujaa", "boxing", "kabaddi", "fifa", "uefa", "caf ",
-    "sevens", "gor mahia", "afc leopards", "kcb fc", "tusker fc", "ipl", "cricket",
-    "f1", "formula", "kipchoge", "kipyegon", "rudisha", "obiri", "chebet",
-  ],
-  entertainment: [
-    "diamond", "bahati", "size 8", "akothee", "khaligraph", "nyashinski", "sauti sol",
-    "wasafi", "bongo", "music", "song", "album", "single ", "video", "celeb", "drama",
-    "movie", "netflix", "showmax", "concert", "festival", "premiere", "wedding",
-    "engagement", "girlfriend", "boyfriend", "exposed", "leaked", "scandal", "dating",
-    "relationship", "instagram", "tiktok", "viral", "youtube", "actor", "actress",
-    "socialite", "kim k", "huddah", "vera sidika", "amber ray", "mulamwah", "eric omondi",
-  ],
-  economics: [
-    "shilling", "ksh", "kes ", "inflation", "gdp", "treasury", "cbk", "central bank",
-    "kra", "tax ", "budget", "loan", "debt", "imf", "world bank", "stocks", "nse ",
-    "shares", "dividend", "profit", "revenue", "earnings", "bank ", "equity", "kcb",
-    "safaricom", "mpesa", "m-pesa", "fuel price", "petrol", "diesel", "epra",
-    "manufactur", "export", "import", "tariff", "investment", "investor", "startup",
-    "fintech", "economy", "economic", "trade ", "market cap", "ipo ",
-  ],
-};
-
-function categorizeFromText(title: string, body: string): string | null {
-  const text = (title + " " + body).toLowerCase();
-  let best: { cat: string; score: number } | null = null;
-  for (const [cat, words] of Object.entries(CATEGORY_BUZZWORDS)) {
-    let score = 0;
-    for (const w of words) {
-      // word can already include a trailing space for word-boundary intent
-      if (text.includes(w)) score += w.length > 5 ? 2 : 1;
-    }
-    if (score > 0 && (!best || score > best.score)) best = { cat, score };
-  }
-  return best ? best.cat : null;
-}
-
-function decodeEntities(s: string): string {
-  return s
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&apos;/g, "'")
-    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)));
-}
-
-function stripHtml(s: string): string {
-  return s.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").replace(/<[^>]+>/g, "").trim();
-}
-
-function pickTag(item: string, tag: string): string {
-  // NOTE: must use [\\s\\S] inside the template literal so the RegExp sees \s\S
-  const re = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i");
-  const m = item.match(re);
-  return m ? decodeEntities(stripHtml(m[1])) : "";
-}
-
-function pickAtomLink(item: string): string {
-  // Atom: <link href="..." rel="alternate"/>
-  const m = item.match(/<link[^>]*href=["']([^"']+)["'][^>]*\/?>/i);
-  return m ? m[1] : "";
-}
-
-function pickImage(item: string): string {
-  const enc = item.match(/<enclosure[^>]*url=["']([^"']+)["']/i);
-  if (enc) return enc[1];
-  const media = item.match(/<media:content[^>]*url=["']([^"']+)["']/i);
-  if (media) return media[1];
-  const img = item.match(/<img[^>]*src=["']([^"']+)["']/i);
-  if (img) return img[1];
-  return "";
-}
-
-interface ParsedItem {
-  title: string;
-  link: string;
-  description: string;
-  pubDate: string;
-  image: string;
-}
-
-function parseRss(xml: string): ParsedItem[] {
-  const items: ParsedItem[] = [];
-  // RSS <item> blocks
-  const itemRe = /<item[\s>][\s\S]*?<\/item>/gi;
-  const itemMatches = xml.match(itemRe) ?? [];
-  for (const raw of itemMatches) {
-    const title = pickTag(raw, "title");
-    const link = pickTag(raw, "link") || pickAtomLink(raw);
-    const description = pickTag(raw, "description") || pickTag(raw, "content:encoded") || pickTag(raw, "summary");
-    const pubDate = pickTag(raw, "pubDate") || pickTag(raw, "dc:date") || pickTag(raw, "published") || new Date().toISOString();
-    const image = pickImage(raw);
-    if (title && link) items.push({ title, link, description, pubDate, image });
-  }
-  // Atom <entry> blocks
-  const entryRe = /<entry[\s>][\s\S]*?<\/entry>/gi;
-  const entryMatches = xml.match(entryRe) ?? [];
-  for (const raw of entryMatches) {
-    const title = pickTag(raw, "title");
-    const link = pickAtomLink(raw) || pickTag(raw, "id");
-    const description = pickTag(raw, "summary") || pickTag(raw, "content");
-    const pubDate = pickTag(raw, "updated") || pickTag(raw, "published") || new Date().toISOString();
-    const image = pickImage(raw);
-    if (title && link) items.push({ title, link, description, pubDate, image });
-  }
-  return items;
-}
-
-function isKenyanRelevant(title: string, body: string): boolean {
-  const t = (title + " " + body).toLowerCase();
-  return KENYA_KEYWORDS.some((k) => t.includes(k));
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyClient = any;
 
 async function recordHealth(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  admin: any,
+  admin: AnyClient,
   source: string,
   fetchStarted: string,
   success: boolean,
@@ -200,6 +46,21 @@ async function recordHealth(
   );
 }
 
+function toRow(outletSource: string, a: Article, defaultCategory?: string) {
+  return {
+    source: outletSource,
+    title: a.title.slice(0, 500),
+    url: a.url,
+    body: a.body?.slice(0, 4000) || null,
+    image_url: a.imageUrl || null,
+    published_at: a.publishedAt,
+    category: defaultCategory ?? null,
+    processed: false,
+  };
+}
+
+const STAGGER_MS = 400;
+
 export const Route = createFileRoute("/api/public/hooks/scrape-news")({
   server: {
     handlers: {
@@ -212,73 +73,94 @@ export const Route = createFileRoute("/api/public/hooks/scrape-news")({
           auth: { persistSession: false, autoRefreshToken: false },
         });
 
-        const results: Array<{ source: string; fetched: number; inserted: number; error?: string }> = [];
+        const results: Array<{
+          source: string;
+          fetched: number;
+          inserted: number;
+          error?: string;
+          skipped?: boolean;
+        }> = [];
 
-        for (const feed of FEEDS) {
-          const fetchStarted = new Date().toISOString();
+        // In-run URL dedupe (Standard's 7 sections overlap heavily): the same
+        // story from the same host is stored once, credited to the first
+        // outlet that saw it this cycle. Cross-run dedupe stays on source,url.
+        const seenHostPath = new Set<string>();
+        const seenUrl = (url: string) => {
           try {
-            const res = await fetch(feed.url, {
-              headers: {
-                "User-Agent": "Mozilla/5.0 (compatible; SokoResultBot/1.0; +https://sokoresult.com)",
-                "Accept": "application/rss+xml, application/atom+xml, application/xml, text/xml, */*",
-              },
-              signal: AbortSignal.timeout(15_000),
-              redirect: "follow",
-            });
-            if (!res.ok) {
-              await recordHealth(admin, feed.source, fetchStarted, false, `HTTP ${res.status}`, 0);
-              results.push({ source: feed.source, fetched: 0, inserted: 0, error: `HTTP ${res.status}` });
-              continue;
-            }
-            const xml = await res.text();
-            const items = parseRss(xml);
-
-            const isKenyaFeed = !feed.source.includes("BBC");
-            const filtered = items.filter((it) =>
-              isKenyaFeed || isKenyanRelevant(it.title, it.description),
-            );
-
-            const rows = filtered.slice(0, 25).map((it) => {
-              let publishedAt: string;
-              try { publishedAt = new Date(it.pubDate).toISOString(); }
-              catch { publishedAt = new Date().toISOString(); }
-              return {
-                source: feed.source,
-                title: it.title.slice(0, 500),
-                url: it.link,
-                body: it.description.slice(0, 4000) || null,
-                image_url: it.image || null,
-                published_at: publishedAt,
-                category: feed.defaultCategory ?? categorizeFromText(it.title, it.description) ?? null,
-                processed: false,
-              };
-            });
-
-            if (rows.length === 0) {
-              await recordHealth(admin, feed.source, fetchStarted, true, null, 0);
-              results.push({ source: feed.source, fetched: items.length, inserted: 0 });
-              continue;
-            }
-
-            const { data, error } = await admin
-              .from("raw_news_data")
-              .upsert(rows, { onConflict: "source,url", ignoreDuplicates: true })
-              .select("id");
-
-            if (error) {
-              await recordHealth(admin, feed.source, fetchStarted, false, error.message, 0);
-              results.push({ source: feed.source, fetched: items.length, inserted: 0, error: error.message });
-            } else {
-              const inserted = data?.length ?? 0;
-              await recordHealth(admin, feed.source, fetchStarted, true, null, inserted);
-              results.push({ source: feed.source, fetched: items.length, inserted });
-            }
-          } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e);
-            await recordHealth(admin, feed.source, fetchStarted, false, msg, 0);
-            await logPipelineFailure(admin, "scrape-news:feed", e, { source: feed.source });
-            results.push({ source: feed.source, fetched: 0, inserted: 0, error: msg });
+            const u = new URL(url);
+            return seenHostPath.has(u.host + u.pathname.replace(/\/$/, ""));
+          } catch {
+            return false;
           }
+        };
+
+        for (const outlet of OUTLETS) {
+          const fetchStarted = new Date().toISOString();
+          const res = await ingestOutlet(outlet, admin);
+
+          if (res.skipped) {
+            results.push({
+              source: outlet.source,
+              fetched: 0,
+              inserted: 0,
+              skipped: true,
+              error: res.error,
+            });
+            continue;
+          }
+
+          if (!res.ok) {
+            await recordHealth(
+              admin,
+              outlet.source,
+              fetchStarted,
+              false,
+              res.error ?? "unknown error",
+              0,
+            );
+            results.push({ source: outlet.source, fetched: 0, inserted: 0, error: res.error });
+            await new Promise((r) => setTimeout(r, STAGGER_MS));
+            continue;
+          }
+
+          const rows = res.articles
+            .filter((a) => !seenUrl(a.url))
+            .map((a) => {
+              try {
+                const u = new URL(a.url);
+                seenHostPath.add(u.host + u.pathname.replace(/\/$/, ""));
+              } catch {
+                /* dedupe best-effort */
+              }
+              return toRow(outlet.source, a, outlet.defaultCategory);
+            });
+
+          if (rows.length === 0) {
+            await recordHealth(admin, outlet.source, fetchStarted, true, null, 0);
+            results.push({ source: outlet.source, fetched: res.articles.length, inserted: 0 });
+            continue;
+          }
+
+          const { data, error } = await admin
+            .from("raw_news_data")
+            .upsert(rows, { onConflict: "source,url", ignoreDuplicates: true })
+            .select("id");
+
+          if (error) {
+            await recordHealth(admin, outlet.source, fetchStarted, false, error.message, 0);
+            results.push({
+              source: outlet.source,
+              fetched: res.articles.length,
+              inserted: 0,
+              error: error.message,
+            });
+          } else {
+            const inserted = data?.length ?? 0;
+            await recordHealth(admin, outlet.source, fetchStarted, true, null, inserted);
+            results.push({ source: outlet.source, fetched: res.articles.length, inserted });
+          }
+
+          await new Promise((r) => setTimeout(r, STAGGER_MS));
         }
 
         return new Response(JSON.stringify({ ok: true, results }, null, 2), {
