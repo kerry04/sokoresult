@@ -7,7 +7,7 @@ import {
   notFound,
   redirect,
 } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider, useTheme } from "@/lib/theme";
@@ -16,58 +16,17 @@ import { getAdminEnabled } from "@/lib/admin-gate.functions";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
-  // The attempted path is only known in the browser; SSR renders the generic line.
-  const [path, setPath] = useState<string | null>(null);
-  useEffect(() => {
-    setPath(window.location.pathname);
-  }, []);
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md">
-        <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-destructive" />
-          404 · Resolved
-        </div>
-
-        <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-foreground">
-          Does this page exist?
-        </h1>
-
-        <div className="mt-6 rounded-lg border border-border bg-card p-4">
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-            <span className="uppercase tracking-wider">Yes</span>
-            <span className="num font-bold text-muted-foreground">0.0%</span>
-          </div>
-          <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-border/70">
-            <div className="h-full rounded-full bg-success" style={{ width: "0%" }} />
-          </div>
-          <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground">
-            <span className="uppercase tracking-wider">No</span>
-            <span className="num font-bold text-destructive">100%</span>
-          </div>
-          <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-border/70">
-            <div className="h-full rounded-full bg-destructive" style={{ width: "100%" }} />
-          </div>
-          <div className="mt-4 border-t border-border/60 pt-3 text-xs text-muted-foreground">
-            Resolved <span className="font-semibold text-destructive">NO</span>
-            {path ? (
-              <>
-                {" "}
-                · <span className="font-mono">{path}</span> never listed.
-              </>
-            ) : (
-              " · this page never listed."
-            )}
-          </div>
-        </div>
-
+    <div className="flex min-h-screen items-center justify-center bg-white px-4">
+      <div className="text-center">
+        <h1 className="text-6xl font-bold text-neutral-900">404</h1>
+        <p className="mt-3 text-sm text-neutral-600">This page doesn&apos;t exist.</p>
         <div className="mt-6">
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="text-sm font-medium text-neutral-900 underline underline-offset-4 hover:text-neutral-600"
           >
-            Back to the board
+            Go home
           </Link>
         </div>
       </div>
