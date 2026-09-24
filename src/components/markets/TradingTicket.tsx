@@ -143,7 +143,7 @@ export function TradingTicket({
               onClick={() => setShares(n)}
               aria-pressed={cleanShares === n}
               className={cn(
-                "h-8 min-w-[40px] rounded-md border px-2 font-mono text-[13px] font-semibold tabular-nums transition-all duration-150 hover:-translate-y-px",
+                "h-8 min-w-[40px] rounded-md border px-2 font-nums text-[13px] font-semibold tabular-nums transition-all duration-150 hover:-translate-y-px",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success/60",
                 cleanShares === n
                   ? "border-foreground/40 bg-muted text-foreground"
@@ -161,7 +161,7 @@ export function TradingTicket({
             value={shares}
             onChange={(e) => setShares(Math.max(1, parseInt(e.target.value || "1", 10)))}
             aria-label="Custom number of shares"
-            className="h-8 w-[72px] font-mono text-[13px] tabular-nums"
+            className="h-8 w-[72px] font-nums text-[13px] tabular-nums"
           />
         </div>
       </div>

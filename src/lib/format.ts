@@ -46,6 +46,14 @@ export function formatPercent(p: number, digits = 0): string {
 }
 
 /**
+ * One-decimal readout with useless trailing ".0" stripped:
+ * 0 → "0", 2.5 → "2.5". For change readouts like "+2.5%" / "−3 pts".
+ */
+export function formatOneDecimal(n: number): string {
+  return `${Number(n.toFixed(1))}`;
+}
+
+/**
  * Share price in KES. A probability `p` of 0.45 → "KSh 45". Each share
  * resolves to KSh 100 on a winning outcome.
  */

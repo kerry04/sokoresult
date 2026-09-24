@@ -12,7 +12,7 @@ import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Sparkline } from "@/components/markets/Sparkline";
 import { NewsTape, type TapeItem } from "@/components/markets/NewsTape";
-import { CATEGORY_LABEL, formatKESCompact } from "@/lib/format";
+import { CATEGORY_LABEL, formatKESCompact, formatOneDecimal } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { CountdownPill } from "@/components/engagement/CountdownPill";
 
@@ -49,8 +49,7 @@ export function MarketCardCinema({ market, history, tapeItems, pulseKey }: Props
   const dominant = showYes ? yes : 1 - yes;
   const ksh = Math.round(dominant * 100);
   const change = history.length >= 2 ? yes - history[0] : 0;
-  const changePct =
-    history.length >= 2 && history[0] > 0 ? (change / history[0]) * 100 : 0;
+  const changePct = history.length >= 2 && history[0] > 0 ? (change / history[0]) * 100 : 0;
   const up = changePct >= 0;
   const dominantColor = showYes ? "text-success" : "text-destructive";
   const dominantBar = showYes ? "bg-success" : "bg-destructive";
@@ -78,7 +77,7 @@ export function MarketCardCinema({ market, history, tapeItems, pulseKey }: Props
         >
           {up ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
           {up ? "+" : ""}
-          {changePct.toFixed(1)}%
+          {formatOneDecimal(changePct)}%
         </span>
       </div>
 
@@ -121,7 +120,10 @@ export function MarketCardCinema({ market, history, tapeItems, pulseKey }: Props
         <div className="mt-2 flex items-center gap-3">
           <div className="relative h-2 flex-1 rounded-full bg-muted/40 overflow-hidden">
             <div
-              className={cn("absolute inset-y-0 left-0 rounded-full transition-[width] duration-500", dominantBar)}
+              className={cn(
+                "absolute inset-y-0 left-0 rounded-full transition-[width] duration-500",
+                dominantBar,
+              )}
               style={{ width: `${Math.max(2, Math.min(100, dominant * 100))}%` }}
             />
           </div>
@@ -133,10 +135,7 @@ export function MarketCardCinema({ market, history, tapeItems, pulseKey }: Props
 
       {/* Chart */}
       <div className="mt-3 -mx-1">
-        <Sparkline
-          points={history.length ? history : [yes, yes]}
-          height={104}
-        />
+        <Sparkline points={history.length ? history : [yes, yes]} height={104} />
       </div>
 
       {/* Footer */}
@@ -144,9 +143,7 @@ export function MarketCardCinema({ market, history, tapeItems, pulseKey }: Props
         <span className="num text-xs text-muted-foreground">
           Vol {formatKESCompact(market.volume_cents)}
         </span>
-        <span className={cn("num text-lg font-bold", dominantColor)}>
-          KSh {ksh}
-        </span>
+        <span className={cn("num text-lg font-bold", dominantColor)}>KSh {ksh}</span>
       </div>
     </Link>
   );

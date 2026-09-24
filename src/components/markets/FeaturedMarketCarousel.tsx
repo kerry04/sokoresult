@@ -6,7 +6,12 @@ import { ProbabilityBar } from "./ProbabilityBar";
 import { MarketStats, type StatItem } from "./MarketStats";
 import { TradingTicket } from "./TradingTicket";
 import { DEMO_MARKETS, type CarouselMarket } from "./demo-markets";
-import { CATEGORY_LABEL, formatKESCompact, formatTimeRemaining } from "@/lib/format";
+import {
+  CATEGORY_LABEL,
+  formatKESCompact,
+  formatOneDecimal,
+  formatTimeRemaining,
+} from "@/lib/format";
 import { priceChangePts, type ProductMarket } from "./product-market";
 import { cn } from "@/lib/utils";
 
@@ -22,7 +27,7 @@ function toCarouselMarket(m: ProductMarket): CarouselMarket {
       : [
           {
             label: "24h",
-            value: `${change > 0 ? "+" : ""}${change.toFixed(1)}%`,
+            value: `${change > 0 ? "+" : ""}${formatOneDecimal(change)}%`,
             tone: (change > 0 ? "up" : change < 0 ? "down" : "flat") as StatItem["tone"],
           },
         ]),

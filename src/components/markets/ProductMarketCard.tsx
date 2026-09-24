@@ -1,6 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowDownRight, ArrowRight, ArrowUpRight } from "lucide-react";
-import { CATEGORY_LABEL, formatKESCompact, formatTimeRemaining } from "@/lib/format";
+import {
+  CATEGORY_LABEL,
+  formatKESCompact,
+  formatOneDecimal,
+  formatTimeRemaining,
+} from "@/lib/format";
 import { Sparkline } from "./Sparkline";
 import { DraftTradeTicket } from "./DraftTradeTicket";
 import { priceChangePts, type ProductMarket } from "./product-market";
@@ -26,10 +31,10 @@ export function ProductMarketCard({ market }: { market: ProductMarket }) {
         {change !== null ? (
           <span
             className={cn(
-              "inline-flex items-center gap-0.5 font-mono text-xs font-bold tabular-nums",
+              "inline-flex items-center gap-0.5 font-nums text-xs font-bold tabular-nums",
               up ? "text-success" : "text-destructive",
             )}
-            aria-label={`Price moved ${up ? "up" : "down"} ${Math.abs(change).toFixed(1)} points`}
+            aria-label={`Price moved ${up ? "up" : "down"} ${formatOneDecimal(Math.abs(change))} points`}
           >
             {up ? (
               <ArrowUpRight className="h-3.5 w-3.5" />
@@ -37,7 +42,7 @@ export function ProductMarketCard({ market }: { market: ProductMarket }) {
               <ArrowDownRight className="h-3.5 w-3.5" />
             )}
             {up ? "+" : "−"}
-            {Math.abs(change).toFixed(1)} pts
+            {formatOneDecimal(Math.abs(change))} pts
           </span>
         ) : (
           <span className="font-mono text-[11px] text-muted-foreground">New market</span>

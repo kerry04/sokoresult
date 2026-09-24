@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Flame } from "lucide-react";
-import { CATEGORY_LABEL } from "@/lib/format";
+import { CATEGORY_LABEL, formatOneDecimal } from "@/lib/format";
 import { priceChangePts, type ProductMarket } from "./product-market";
 import { cn } from "@/lib/utils";
 
@@ -70,7 +70,7 @@ export function TrendingMarkets({ markets }: { markets: ProductMarket[] }) {
                       )}
                     >
                       {up ? "+" : "−"}
-                      {Math.abs(change).toFixed(1)} pts
+                      {formatOneDecimal(Math.abs(change))} pts
                     </span>
                   )}
                   <span className="num shrink-0 text-sm font-bold text-success">
