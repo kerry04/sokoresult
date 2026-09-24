@@ -31,6 +31,7 @@ import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminTradesRouteImport } from './routes/admin/trades'
 import { Route as AdminSyndicatesRouteImport } from './routes/admin/syndicates'
 import { Route as AdminSupportRouteImport } from './routes/admin/support'
+import { Route as AdminSuggestionsRouteImport } from './routes/admin/suggestions'
 import { Route as AdminSignalsRouteImport } from './routes/admin/signals'
 import { Route as AdminNewsRouteImport } from './routes/admin/news'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
@@ -171,6 +172,11 @@ const AdminSyndicatesRoute = AdminSyndicatesRouteImport.update({
 const AdminSupportRoute = AdminSupportRouteImport.update({
   id: '/support',
   path: '/support',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminSuggestionsRoute = AdminSuggestionsRouteImport.update({
+  id: '/suggestions',
+  path: '/suggestions',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminSignalsRoute = AdminSignalsRouteImport.update({
@@ -364,6 +370,7 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/admin/news': typeof AdminNewsRoute
   '/admin/signals': typeof AdminSignalsRoute
+  '/admin/suggestions': typeof AdminSuggestionsRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/syndicates': typeof AdminSyndicatesRoute
   '/admin/trades': typeof AdminTradesRoute
@@ -417,6 +424,7 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/admin/news': typeof AdminNewsRoute
   '/admin/signals': typeof AdminSignalsRoute
+  '/admin/suggestions': typeof AdminSuggestionsRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/syndicates': typeof AdminSyndicatesRoute
   '/admin/trades': typeof AdminTradesRoute
@@ -474,6 +482,7 @@ export interface FileRoutesById {
   '/admin/login': typeof AdminLoginRoute
   '/admin/news': typeof AdminNewsRoute
   '/admin/signals': typeof AdminSignalsRoute
+  '/admin/suggestions': typeof AdminSuggestionsRoute
   '/admin/support': typeof AdminSupportRoute
   '/admin/syndicates': typeof AdminSyndicatesRoute
   '/admin/trades': typeof AdminTradesRoute
@@ -531,6 +540,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/news'
     | '/admin/signals'
+    | '/admin/suggestions'
     | '/admin/support'
     | '/admin/syndicates'
     | '/admin/trades'
@@ -584,6 +594,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/news'
     | '/admin/signals'
+    | '/admin/suggestions'
     | '/admin/support'
     | '/admin/syndicates'
     | '/admin/trades'
@@ -640,6 +651,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/news'
     | '/admin/signals'
+    | '/admin/suggestions'
     | '/admin/support'
     | '/admin/syndicates'
     | '/admin/trades'
@@ -846,6 +858,13 @@ declare module '@tanstack/react-router' {
       path: '/support'
       fullPath: '/admin/support'
       preLoaderRoute: typeof AdminSupportRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/suggestions': {
+      id: '/admin/suggestions'
+      path: '/suggestions'
+      fullPath: '/admin/suggestions'
+      preLoaderRoute: typeof AdminSuggestionsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/signals': {
@@ -1083,6 +1102,7 @@ interface AdminRouteRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
   AdminNewsRoute: typeof AdminNewsRoute
   AdminSignalsRoute: typeof AdminSignalsRoute
+  AdminSuggestionsRoute: typeof AdminSuggestionsRoute
   AdminSupportRoute: typeof AdminSupportRoute
   AdminSyndicatesRoute: typeof AdminSyndicatesRoute
   AdminTradesRoute: typeof AdminTradesRoute
@@ -1103,6 +1123,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   AdminNewsRoute: AdminNewsRoute,
   AdminSignalsRoute: AdminSignalsRoute,
+  AdminSuggestionsRoute: AdminSuggestionsRoute,
   AdminSupportRoute: AdminSupportRoute,
   AdminSyndicatesRoute: AdminSyndicatesRoute,
   AdminTradesRoute: AdminTradesRoute,

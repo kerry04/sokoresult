@@ -18,21 +18,27 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import {
-  CandidateEditor,
-  type Candidate,
-  slugifyLabel,
-} from "@/components/admin/CandidateEditor";
+import { CandidateEditor, type Candidate, slugifyLabel } from "@/components/admin/CandidateEditor";
 import { ImageUploader } from "@/components/common/ImageUploader";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/markets/create")({
-  validateSearch: (s: Record<string, unknown>) => ({
+  validateSearch: (
+    s: Record<string, unknown>,
+  ): {
+    question?: string;
+    category?: string;
+    yes?: number;
+    closes?: string;
+    from?: string;
+    criteria?: string;
+  } => ({
     question: typeof s.question === "string" ? s.question : undefined,
     category: typeof s.category === "string" ? s.category : undefined,
     yes: typeof s.yes === "string" ? Number(s.yes) : undefined,
     closes: typeof s.closes === "string" ? s.closes : undefined,
     from: typeof s.from === "string" ? s.from : undefined,
+    criteria: typeof s.criteria === "string" ? s.criteria : undefined,
   }),
   component: CreateMarketPage,
 });
@@ -57,7 +63,7 @@ function CreateMarketPage() {
   const [question, setQuestion] = useState(search.question ?? "");
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState(search.criteria ?? "");
   const [category, setCategory] = useState<(typeof categories)[number]>(
     (categories as readonly string[]).includes(search.category ?? "")
       ? (search.category as (typeof categories)[number])
@@ -121,7 +127,10 @@ function CreateMarketPage() {
       yes_price: marketType === "binary" ? yesPct / 100 : 0.5,
       no_price: marketType === "binary" ? noPct / 100 : 0.5,
       keywords: keywords
-        ? keywords.split(",").map((k) => k.trim()).filter(Boolean)
+        ? keywords
+            .split(",")
+            .map((k) => k.trim())
+            .filter(Boolean)
         : null,
       resolution_source: resolutionSource.trim() || null,
       image_url: imageUrl,
@@ -146,7 +155,7 @@ function CreateMarketPage() {
       // Build outcome rows with unique slugs
       const used = new Set<string>();
       const rows = candidates.map((c, i) => {
-        let base = slugifyLabel(c.label) || `option-${i + 1}`;
+        const base = slugifyLabel(c.label) || `option-${i + 1}`;
         let s = base;
         let n = 2;
         while (used.has(s)) s = `${base}-${n++}`;
@@ -182,7 +191,7 @@ function CreateMarketPage() {
     if (search.from) {
       await supabase
         .from("market_suggestions")
-        .update({ used_market_id: created.id })
+        .update({ used_market_id: created.id, status: "approved" })
         .eq("id", search.from);
     }
     setSubmitting(false);
@@ -268,7 +277,9 @@ function CreateMarketPage() {
               }}
               className="mt-1.5 font-mono"
             />
-            <div className="text-xs text-muted-foreground mt-1">/markets/{effectiveSlug || "…"}</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              /markets/{effectiveSlug || "…"}
+            </div>
           </div>
 
           <div>
@@ -285,11 +296,7 @@ function CreateMarketPage() {
           <div>
             <Label>Market image</Label>
             <div className="mt-1.5">
-              <ImageUploader
-                bucket="market-images"
-                value={imageUrl}
-                onChange={setImageUrl}
-              />
+              <ImageUploader bucket="market-images" value={imageUrl} onChange={setImageUrl} />
             </div>
           </div>
 
@@ -323,7 +330,9 @@ function CreateMarketPage() {
 
           {marketType === "binary" ? (
             <div>
-              <Label>Initial YES price: KSh {yesPct} · NO KSh {noPct}</Label>
+              <Label>
+                Initial YES price: KSh {yesPct} · NO KSh {noPct}
+              </Label>
               <Slider
                 min={1}
                 max={99}
@@ -417,11 +426,11 @@ function CreateMarketPage() {
                       className="flex items-center justify-between text-sm rounded border border-border bg-background/40 px-2 py-1.5"
                     >
                       <span className="truncate">
-                        {c.label || <span className="text-muted-foreground">Candidate {i + 1}</span>}
+                        {c.label || (
+                          <span className="text-muted-foreground">Candidate {i + 1}</span>
+                        )}
                       </span>
-                      <span className="font-mono text-primary font-bold">
-                        KSh {c.price_pct}
-                      </span>
+                      <span className="font-mono text-primary font-bold">KSh {c.price_pct}</span>
                     </div>
                   ))}
                 {candidates.length > 6 && (

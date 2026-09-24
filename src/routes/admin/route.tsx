@@ -4,7 +4,25 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
-import { Shield, LayoutDashboard, BarChart3, Plus, LogOut, Loader2, ShieldCheck, Newspaper, Users, LifeBuoy, Activity, AlertTriangle, Users2, Radio, HeartPulse, TrendingUp } from "lucide-react";
+import {
+  Shield,
+  LayoutDashboard,
+  BarChart3,
+  Plus,
+  LogOut,
+  Loader2,
+  ShieldCheck,
+  Newspaper,
+  Users,
+  LifeBuoy,
+  Activity,
+  AlertTriangle,
+  Users2,
+  Radio,
+  HeartPulse,
+  TrendingUp,
+  Sparkles,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin")({
@@ -15,6 +33,7 @@ const adminNav = [
   { to: "/admin", icon: LayoutDashboard, label: "Dashboard", exact: true },
   { to: "/admin/markets", icon: BarChart3, label: "Markets", exact: false },
   { to: "/admin/markets/create", icon: Plus, label: "Create Market", exact: true },
+  { to: "/admin/suggestions", icon: Sparkles, label: "Review Queue", exact: true },
   { to: "/admin/trades", icon: Activity, label: "Trades", exact: false },
   { to: "/admin/edge", icon: TrendingUp, label: "Edge Opportunities", exact: false },
   { to: "/admin/alerts", icon: AlertTriangle, label: "Alerts", exact: false },
@@ -101,9 +120,7 @@ function AdminLayout() {
           );
         })}
         <div className="mt-auto space-y-1">
-          <div className="px-3 py-2 text-[11px] text-muted-foreground truncate">
-            {user?.email}
-          </div>
+          <div className="px-3 py-2 text-[11px] text-muted-foreground truncate">{user?.email}</div>
           <Link
             to="/markets"
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
