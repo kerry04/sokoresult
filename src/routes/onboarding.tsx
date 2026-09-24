@@ -71,8 +71,8 @@ function OnboardingPage() {
       return;
     }
     await refreshProfile();
-    toast.success("Profile saved. Let's verify your ID next.");
-    navigate({ to: "/kyc" });
+    toast.success("Profile saved. Quick tour next.");
+    navigate({ to: "/welcome" });
   };
 
   // Brand-new accounts: profile row is created by a DB trigger right after signup.
@@ -90,10 +90,7 @@ function OnboardingPage() {
   }
 
   return (
-    <AuthShell
-      title="One last thing"
-      subtitle="Set up your trader profile."
-    >
+    <AuthShell title="One last thing" subtitle="Set up your trader profile.">
       <form onSubmit={submit} className="space-y-5">
         <div>
           <Label htmlFor="name">Display name</Label>
@@ -109,7 +106,9 @@ function OnboardingPage() {
           />
         </div>
         <div>
-          <Label htmlFor="ref">Referral code <span className="text-muted-foreground">(optional)</span></Label>
+          <Label htmlFor="ref">
+            Referral code <span className="text-muted-foreground">(optional)</span>
+          </Label>
           <Input
             id="ref"
             value={referral}

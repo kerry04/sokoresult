@@ -4,12 +4,8 @@ import { useState } from "react";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { LanguageToggle, useLang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-
-const NAV = [
-  { label: "Markets", to: "/", hash: undefined },
-  { label: "Learn", to: "/learn", hash: undefined },
-] as const;
 
 /**
  * Compact product header for the public site. h-14, serious fintech feel.
@@ -17,6 +13,12 @@ const NAV = [
  */
 export function PublicHeader() {
   const [open, setOpen] = useState(false);
+  const { t } = useLang();
+
+  const NAV = [
+    { label: t("nav.markets"), to: "/", hash: undefined },
+    { label: t("nav.learn"), to: "/learn", hash: undefined },
+  ] as const;
 
   return (
     <header className="sticky top-0 z-40 h-14 border-b border-border/60 bg-background/85 backdrop-blur-xl">
@@ -28,7 +30,7 @@ export function PublicHeader() {
         <nav aria-label="Primary" className="hidden items-center gap-7 md:flex">
           {NAV.map((n) => (
             <Link
-              key={n.label}
+              key={n.to}
               to={n.to}
               hash={n.hash}
               className="text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -39,6 +41,7 @@ export function PublicHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <LanguageToggle className="hidden sm:inline-flex" />
           <ThemeToggle />
           <Button
             variant="ghost"
@@ -46,20 +49,20 @@ export function PublicHeader() {
             asChild
             className="hidden text-muted-foreground hover:text-foreground sm:inline-flex"
           >
-            <Link to="/login">Sign in</Link>
+            <Link to="/login">{t("nav.signin")}</Link>
           </Button>
           <Button
             size="sm"
             asChild
             className="hidden bg-success font-semibold text-success-foreground hover:bg-success/90 sm:inline-flex"
           >
-            <Link to="/signup">Start Trading</Link>
+            <Link to="/signup">{t("nav.startTrading")}</Link>
           </Button>
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
-            aria-label={open ? "Close menu" : "Open menu"}
+            aria-label={open ? t("nav.closeMenu") : t("nav.openMenu")}
             className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success/60 md:hidden"
           >
             {open ? (
@@ -81,7 +84,7 @@ export function PublicHeader() {
         <nav aria-label="Mobile" className="flex flex-col px-4 py-3">
           {NAV.map((n) => (
             <Link
-              key={n.label}
+              key={n.to}
               to={n.to}
               hash={n.hash}
               onClick={() => setOpen(false)}
@@ -91,15 +94,19 @@ export function PublicHeader() {
             </Link>
           ))}
           <div className="flex items-center justify-between px-3 py-3">
-            <span className="text-[15px] text-muted-foreground">Appearance</span>
+            <span className="text-[15px] text-muted-foreground">{t("nav.appearance")}</span>
             <ThemeToggle />
+          </div>
+          <div className="flex items-center justify-between px-3 py-3">
+            <span className="text-[15px] text-muted-foreground">{t("nav.language")}</span>
+            <LanguageToggle />
           </div>
           <Link
             to="/login"
             onClick={() => setOpen(false)}
             className="rounded-lg px-3 py-3 text-[15px] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:hidden"
           >
-            Sign in
+            {t("nav.signin")}
           </Link>
         </nav>
       </div>

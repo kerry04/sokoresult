@@ -23,6 +23,7 @@ import {
   type ProductMarket,
 } from "@/components/markets/product-market";
 import { cn } from "@/lib/utils";
+import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -78,6 +79,7 @@ function useOpenMarkets() {
       setCount(c ?? rows.length);
 
       const histories: Record<string, PricePoint[]> = {};
+      const signals: Record<string, { prob: number; conf: number }> = {};
       if (rows.length > 0) {
         const { data: ph } = await supabase
           .from("price_history")
@@ -94,6 +96,22 @@ function useOpenMarkets() {
             histories[k].push({ yes_price: Number(row.yes_price), recorded_at: row.recorded_at });
           },
         );
+        // Soko model estimates for the AI-vs-market comparison (public read).
+        const { data: sig } = await supabase
+          .from("market_signals")
+          .select("market_id, signal_prob, confidence")
+          .in(
+            "market_id",
+            rows.map((r) => r.id),
+          );
+        ((sig ?? []) as { market_id: string; signal_prob: number; confidence: number }[]).forEach(
+          (row) => {
+            signals[row.market_id] = {
+              prob: Number(row.signal_prob),
+              conf: Number(row.confidence),
+            };
+          },
+        );
       }
       if (!cancelled) {
         setMarkets(
@@ -104,6 +122,8 @@ function useOpenMarkets() {
             volume_cents: Number(r.volume_cents),
             trader_count: Number(r.trader_count ?? 0),
             history: histories[r.id] ?? [],
+            signalProb: signals[r.id]?.prob ?? null,
+            signalConfidence: signals[r.id]?.conf ?? null,
           })),
         );
         setLoading(false);
@@ -126,6 +146,7 @@ function useOpenMarkets() {
 
 function LandingPage() {
   const { markets, count, loading } = useOpenMarkets();
+  const { t } = useLang();
 
   return (
     <div className="min-h-screen flex flex-col bg-background pb-[84px] md:pb-0">
@@ -143,17 +164,14 @@ function LandingPage() {
                 id="markets-heading"
                 className="text-2xl font-extrabold tracking-tight sm:text-3xl"
               >
-                Markets
+                {t("home.title")}
               </h1>
-              <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-                Pick a side, set your stake, and draft your prediction — you sign in only when you
-                buy.
-              </p>
+              <p className="mt-1 max-w-xl text-sm text-muted-foreground">{t("home.subtitle")}</p>
             </div>
             {!loading && count !== null && count > 0 && (
               <p className="inline-flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
                 <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" aria-hidden />
-                <span className="num font-semibold text-foreground">{count}</span> open
+                <span className="num font-semibold text-foreground">{count}</span> {t("home.open")}
               </p>
             )}
           </div>

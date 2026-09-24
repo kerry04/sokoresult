@@ -6,8 +6,10 @@ import {
   formatOneDecimal,
   formatTimeRemaining,
 } from "@/lib/format";
+import { useLang } from "@/lib/i18n";
 import { Sparkline } from "./Sparkline";
 import { DraftTradeTicket } from "./DraftTradeTicket";
+import { ModelEdge } from "./ModelEdge";
 import { priceChangePts, type ProductMarket } from "./product-market";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +20,7 @@ import { cn } from "@/lib/utils";
  * appears when BUY is pressed.
  */
 export function ProductMarketCard({ market }: { market: ProductMarket }) {
+  const { t } = useLang();
   const yesPct = Math.round(market.yes_price * 100);
   const change = priceChangePts(market.history);
   const up = change !== null && change >= 0;
@@ -45,7 +48,7 @@ export function ProductMarketCard({ market }: { market: ProductMarket }) {
             {formatOneDecimal(Math.abs(change))} pts
           </span>
         ) : (
-          <span className="font-mono text-[11px] text-muted-foreground">New market</span>
+          <span className="font-mono text-[11px] text-muted-foreground">{t("card.newMarket")}</span>
         )}
       </div>
 
@@ -56,13 +59,21 @@ export function ProductMarketCard({ market }: { market: ProductMarket }) {
       {/* Probability bar */}
       <div className="mt-3" role="img" aria-label={`Yes probability ${yesPct} percent`}>
         <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-          <span className="uppercase tracking-wider">Yes</span>
+          <span className="uppercase tracking-wider">{t("card.yes")}</span>
           <span className="num font-bold text-success">{yesPct}%</span>
         </div>
         <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-border/70">
           <div className="h-full rounded-full bg-success" style={{ width: `${yesPct}%` }} />
         </div>
       </div>
+
+      {/* Soko model comparison — compact, honest */}
+      <ModelEdge
+        yesPrice={market.yes_price}
+        signalProb={market.signalProb}
+        confidence={market.signalConfidence}
+        className="mt-2"
+      />
 
       {market.history.length >= 2 && (
         <Sparkline points={market.history.map((p) => p.yes_price)} height={56} className="mt-3" />
@@ -71,14 +82,18 @@ export function ProductMarketCard({ market }: { market: ProductMarket }) {
       <DraftTradeTicket market={market} />
 
       <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-3 text-xs text-muted-foreground">
-        <span className="num">Vol {formatKESCompact(market.volume_cents)}</span>
-        <span>Ends {formatTimeRemaining(market.closes_at)}</span>
+        <span className="num">
+          {t("card.vol")} {formatKESCompact(market.volume_cents)}
+        </span>
+        <span>
+          {t("card.ends")} {formatTimeRemaining(market.closes_at)}
+        </span>
         <Link
           to="/markets/$slug"
           params={{ slug: market.slug }}
           className="inline-flex items-center gap-1 font-medium text-foreground/80 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success/60 rounded"
         >
-          Details <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+          {t("card.details")} <ArrowRight className="h-3.5 w-3.5" aria-hidden />
         </Link>
       </div>
     </article>

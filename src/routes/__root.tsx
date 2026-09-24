@@ -11,6 +11,7 @@ import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider, useTheme } from "@/lib/theme";
+import { LanguageProvider } from "@/lib/i18n";
 import { getAdminEnabled } from "@/lib/admin-gate.functions";
 
 import appCss from "../styles.css?url";
@@ -138,10 +139,12 @@ function RootComponent() {
 
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <Outlet />
-        <ThemedToaster />
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <Outlet />
+          <ThemedToaster />
+        </AuthProvider>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

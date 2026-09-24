@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -27,6 +28,7 @@ import { Route as LearnHowToTradeRouteImport } from './routes/learn.how-to-trade
 import { Route as LearnExamplesRouteImport } from './routes/learn.examples'
 import { Route as LearnDisclaimerRouteImport } from './routes/learn.disclaimer'
 import { Route as LearnAboutRouteImport } from './routes/learn.about'
+import { Route as ApiAlertsRouteImport } from './routes/api/alerts'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as AdminTradesRouteImport } from './routes/admin/trades'
 import { Route as AdminSyndicatesRouteImport } from './routes/admin/syndicates'
@@ -43,13 +45,21 @@ import { Route as AuthedWalletRouteImport } from './routes/_authed/wallet'
 import { Route as AuthedSupportRouteImport } from './routes/_authed/support'
 import { Route as AuthedProfileRouteImport } from './routes/_authed/profile'
 import { Route as AuthedPortfolioRouteImport } from './routes/_authed/portfolio'
+import { Route as AuthedNotificationsRouteImport } from './routes/_authed/notifications'
 import { Route as AuthedNewsRouteImport } from './routes/_authed/news'
 import { Route as AuthedLeaderboardRouteImport } from './routes/_authed/leaderboard'
 import { Route as AuthedKycRouteImport } from './routes/_authed/kyc'
 import { Route as AuthedComingSoonRouteImport } from './routes/_authed/coming-soon'
 import { Route as AdminMarketsIndexRouteImport } from './routes/admin/markets.index'
 import { Route as AuthedMarketsIndexRouteImport } from './routes/_authed/markets.index'
+import { Route as ApiPaymentsWebhookRouteImport } from './routes/api/payments/webhook'
+import { Route as ApiPaymentsVerifyRouteImport } from './routes/api/payments/verify'
+import { Route as ApiPaymentsStatusRouteImport } from './routes/api/payments/status'
+import { Route as ApiPaymentsDepositRouteImport } from './routes/api/payments/deposit'
+import { Route as ApiNotificationsPreferencesRouteImport } from './routes/api/notifications/preferences'
 import { Route as ApiLocalSplatRouteImport } from './routes/api/local/$'
+import { Route as ApiAlertsCheckRouteImport } from './routes/api/alerts/check'
+import { Route as ApiAlertsIdRouteImport } from './routes/api/alerts.$id'
 import { Route as AdminMarketsSuggestRouteImport } from './routes/admin/markets.suggest'
 import { Route as AdminMarketsCreateRouteImport } from './routes/admin/markets.create'
 import { Route as AuthedUUserIdRouteImport } from './routes/_authed/u.$userId'
@@ -65,6 +75,11 @@ import { Route as ApiPublicHooksAnalyzeSentimentRouteImport } from './routes/api
 import { Route as AdminMarketsIdResolveRouteImport } from './routes/admin/markets.$id.resolve'
 import { Route as AdminMarketsIdEditRouteImport } from './routes/admin/markets.$id.edit'
 
+const WelcomeRoute = WelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -154,6 +169,11 @@ const LearnAboutRoute = LearnAboutRouteImport.update({
   path: '/about',
   getParentRoute: () => LearnRoute,
 } as any)
+const ApiAlertsRoute = ApiAlertsRouteImport.update({
+  id: '/api/alerts',
+  path: '/api/alerts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -234,6 +254,11 @@ const AuthedPortfolioRoute = AuthedPortfolioRouteImport.update({
   path: '/portfolio',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedNotificationsRoute = AuthedNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => AuthedRoute,
+} as any)
 const AuthedNewsRoute = AuthedNewsRouteImport.update({
   id: '/news',
   path: '/news',
@@ -264,10 +289,46 @@ const AuthedMarketsIndexRoute = AuthedMarketsIndexRouteImport.update({
   path: '/markets/',
   getParentRoute: () => AuthedRoute,
 } as any)
+const ApiPaymentsWebhookRoute = ApiPaymentsWebhookRouteImport.update({
+  id: '/api/payments/webhook',
+  path: '/api/payments/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPaymentsVerifyRoute = ApiPaymentsVerifyRouteImport.update({
+  id: '/api/payments/verify',
+  path: '/api/payments/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPaymentsStatusRoute = ApiPaymentsStatusRouteImport.update({
+  id: '/api/payments/status',
+  path: '/api/payments/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPaymentsDepositRoute = ApiPaymentsDepositRouteImport.update({
+  id: '/api/payments/deposit',
+  path: '/api/payments/deposit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiNotificationsPreferencesRoute =
+  ApiNotificationsPreferencesRouteImport.update({
+    id: '/api/notifications/preferences',
+    path: '/api/notifications/preferences',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiLocalSplatRoute = ApiLocalSplatRouteImport.update({
   id: '/api/local/$',
   path: '/api/local/$',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAlertsCheckRoute = ApiAlertsCheckRouteImport.update({
+  id: '/check',
+  path: '/check',
+  getParentRoute: () => ApiAlertsRoute,
+} as any)
+const ApiAlertsIdRoute = ApiAlertsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiAlertsRoute,
 } as any)
 const AdminMarketsSuggestRoute = AdminMarketsSuggestRouteImport.update({
   id: '/markets/suggest',
@@ -355,10 +416,12 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/welcome': typeof WelcomeRoute
   '/coming-soon': typeof AuthedComingSoonRoute
   '/kyc': typeof AuthedKycRoute
   '/leaderboard': typeof AuthedLeaderboardRoute
   '/news': typeof AuthedNewsRoute
+  '/notifications': typeof AuthedNotificationsRoute
   '/portfolio': typeof AuthedPortfolioRoute
   '/profile': typeof AuthedProfileRoute
   '/support': typeof AuthedSupportRouteWithChildren
@@ -375,6 +438,7 @@ export interface FileRoutesByFullPath {
   '/admin/syndicates': typeof AdminSyndicatesRoute
   '/admin/trades': typeof AdminTradesRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/alerts': typeof ApiAlertsRouteWithChildren
   '/learn/about': typeof LearnAboutRoute
   '/learn/disclaimer': typeof LearnDisclaimerRoute
   '/learn/examples': typeof LearnExamplesRoute
@@ -389,7 +453,14 @@ export interface FileRoutesByFullPath {
   '/u/$userId': typeof AuthedUUserIdRoute
   '/admin/markets/create': typeof AdminMarketsCreateRoute
   '/admin/markets/suggest': typeof AdminMarketsSuggestRoute
+  '/api/alerts/$id': typeof ApiAlertsIdRoute
+  '/api/alerts/check': typeof ApiAlertsCheckRoute
   '/api/local/$': typeof ApiLocalSplatRoute
+  '/api/notifications/preferences': typeof ApiNotificationsPreferencesRoute
+  '/api/payments/deposit': typeof ApiPaymentsDepositRoute
+  '/api/payments/status': typeof ApiPaymentsStatusRoute
+  '/api/payments/verify': typeof ApiPaymentsVerifyRoute
+  '/api/payments/webhook': typeof ApiPaymentsWebhookRoute
   '/markets/': typeof AuthedMarketsIndexRoute
   '/admin/markets/': typeof AdminMarketsIndexRoute
   '/admin/markets/$id/edit': typeof AdminMarketsIdEditRoute
@@ -409,10 +480,12 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/welcome': typeof WelcomeRoute
   '/coming-soon': typeof AuthedComingSoonRoute
   '/kyc': typeof AuthedKycRoute
   '/leaderboard': typeof AuthedLeaderboardRoute
   '/news': typeof AuthedNewsRoute
+  '/notifications': typeof AuthedNotificationsRoute
   '/portfolio': typeof AuthedPortfolioRoute
   '/profile': typeof AuthedProfileRoute
   '/support': typeof AuthedSupportRouteWithChildren
@@ -429,6 +502,7 @@ export interface FileRoutesByTo {
   '/admin/syndicates': typeof AdminSyndicatesRoute
   '/admin/trades': typeof AdminTradesRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/alerts': typeof ApiAlertsRouteWithChildren
   '/learn/about': typeof LearnAboutRoute
   '/learn/disclaimer': typeof LearnDisclaimerRoute
   '/learn/examples': typeof LearnExamplesRoute
@@ -443,7 +517,14 @@ export interface FileRoutesByTo {
   '/u/$userId': typeof AuthedUUserIdRoute
   '/admin/markets/create': typeof AdminMarketsCreateRoute
   '/admin/markets/suggest': typeof AdminMarketsSuggestRoute
+  '/api/alerts/$id': typeof ApiAlertsIdRoute
+  '/api/alerts/check': typeof ApiAlertsCheckRoute
   '/api/local/$': typeof ApiLocalSplatRoute
+  '/api/notifications/preferences': typeof ApiNotificationsPreferencesRoute
+  '/api/payments/deposit': typeof ApiPaymentsDepositRoute
+  '/api/payments/status': typeof ApiPaymentsStatusRoute
+  '/api/payments/verify': typeof ApiPaymentsVerifyRoute
+  '/api/payments/webhook': typeof ApiPaymentsWebhookRoute
   '/markets': typeof AuthedMarketsIndexRoute
   '/admin/markets': typeof AdminMarketsIndexRoute
   '/admin/markets/$id/edit': typeof AdminMarketsIdEditRoute
@@ -467,10 +548,12 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/welcome': typeof WelcomeRoute
   '/_authed/coming-soon': typeof AuthedComingSoonRoute
   '/_authed/kyc': typeof AuthedKycRoute
   '/_authed/leaderboard': typeof AuthedLeaderboardRoute
   '/_authed/news': typeof AuthedNewsRoute
+  '/_authed/notifications': typeof AuthedNotificationsRoute
   '/_authed/portfolio': typeof AuthedPortfolioRoute
   '/_authed/profile': typeof AuthedProfileRoute
   '/_authed/support': typeof AuthedSupportRouteWithChildren
@@ -487,6 +570,7 @@ export interface FileRoutesById {
   '/admin/syndicates': typeof AdminSyndicatesRoute
   '/admin/trades': typeof AdminTradesRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/alerts': typeof ApiAlertsRouteWithChildren
   '/learn/about': typeof LearnAboutRoute
   '/learn/disclaimer': typeof LearnDisclaimerRoute
   '/learn/examples': typeof LearnExamplesRoute
@@ -501,7 +585,14 @@ export interface FileRoutesById {
   '/_authed/u/$userId': typeof AuthedUUserIdRoute
   '/admin/markets/create': typeof AdminMarketsCreateRoute
   '/admin/markets/suggest': typeof AdminMarketsSuggestRoute
+  '/api/alerts/$id': typeof ApiAlertsIdRoute
+  '/api/alerts/check': typeof ApiAlertsCheckRoute
   '/api/local/$': typeof ApiLocalSplatRoute
+  '/api/notifications/preferences': typeof ApiNotificationsPreferencesRoute
+  '/api/payments/deposit': typeof ApiPaymentsDepositRoute
+  '/api/payments/status': typeof ApiPaymentsStatusRoute
+  '/api/payments/verify': typeof ApiPaymentsVerifyRoute
+  '/api/payments/webhook': typeof ApiPaymentsWebhookRoute
   '/_authed/markets/': typeof AuthedMarketsIndexRoute
   '/admin/markets/': typeof AdminMarketsIndexRoute
   '/admin/markets/$id/edit': typeof AdminMarketsIdEditRoute
@@ -525,10 +616,12 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/signup'
     | '/terms'
+    | '/welcome'
     | '/coming-soon'
     | '/kyc'
     | '/leaderboard'
     | '/news'
+    | '/notifications'
     | '/portfolio'
     | '/profile'
     | '/support'
@@ -545,6 +638,7 @@ export interface FileRouteTypes {
     | '/admin/syndicates'
     | '/admin/trades'
     | '/admin/users'
+    | '/api/alerts'
     | '/learn/about'
     | '/learn/disclaimer'
     | '/learn/examples'
@@ -559,7 +653,14 @@ export interface FileRouteTypes {
     | '/u/$userId'
     | '/admin/markets/create'
     | '/admin/markets/suggest'
+    | '/api/alerts/$id'
+    | '/api/alerts/check'
     | '/api/local/$'
+    | '/api/notifications/preferences'
+    | '/api/payments/deposit'
+    | '/api/payments/status'
+    | '/api/payments/verify'
+    | '/api/payments/webhook'
     | '/markets/'
     | '/admin/markets/'
     | '/admin/markets/$id/edit'
@@ -579,10 +680,12 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/signup'
     | '/terms'
+    | '/welcome'
     | '/coming-soon'
     | '/kyc'
     | '/leaderboard'
     | '/news'
+    | '/notifications'
     | '/portfolio'
     | '/profile'
     | '/support'
@@ -599,6 +702,7 @@ export interface FileRouteTypes {
     | '/admin/syndicates'
     | '/admin/trades'
     | '/admin/users'
+    | '/api/alerts'
     | '/learn/about'
     | '/learn/disclaimer'
     | '/learn/examples'
@@ -613,7 +717,14 @@ export interface FileRouteTypes {
     | '/u/$userId'
     | '/admin/markets/create'
     | '/admin/markets/suggest'
+    | '/api/alerts/$id'
+    | '/api/alerts/check'
     | '/api/local/$'
+    | '/api/notifications/preferences'
+    | '/api/payments/deposit'
+    | '/api/payments/status'
+    | '/api/payments/verify'
+    | '/api/payments/webhook'
     | '/markets'
     | '/admin/markets'
     | '/admin/markets/$id/edit'
@@ -636,10 +747,12 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/signup'
     | '/terms'
+    | '/welcome'
     | '/_authed/coming-soon'
     | '/_authed/kyc'
     | '/_authed/leaderboard'
     | '/_authed/news'
+    | '/_authed/notifications'
     | '/_authed/portfolio'
     | '/_authed/profile'
     | '/_authed/support'
@@ -656,6 +769,7 @@ export interface FileRouteTypes {
     | '/admin/syndicates'
     | '/admin/trades'
     | '/admin/users'
+    | '/api/alerts'
     | '/learn/about'
     | '/learn/disclaimer'
     | '/learn/examples'
@@ -670,7 +784,14 @@ export interface FileRouteTypes {
     | '/_authed/u/$userId'
     | '/admin/markets/create'
     | '/admin/markets/suggest'
+    | '/api/alerts/$id'
+    | '/api/alerts/check'
     | '/api/local/$'
+    | '/api/notifications/preferences'
+    | '/api/payments/deposit'
+    | '/api/payments/status'
+    | '/api/payments/verify'
+    | '/api/payments/webhook'
     | '/_authed/markets/'
     | '/admin/markets/'
     | '/admin/markets/$id/edit'
@@ -694,7 +815,14 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   SignupRoute: typeof SignupRoute
   TermsRoute: typeof TermsRoute
+  WelcomeRoute: typeof WelcomeRoute
+  ApiAlertsRoute: typeof ApiAlertsRouteWithChildren
   ApiLocalSplatRoute: typeof ApiLocalSplatRoute
+  ApiNotificationsPreferencesRoute: typeof ApiNotificationsPreferencesRoute
+  ApiPaymentsDepositRoute: typeof ApiPaymentsDepositRoute
+  ApiPaymentsStatusRoute: typeof ApiPaymentsStatusRoute
+  ApiPaymentsVerifyRoute: typeof ApiPaymentsVerifyRoute
+  ApiPaymentsWebhookRoute: typeof ApiPaymentsWebhookRoute
   ApiPublicHooksAnalyzeSentimentRoute: typeof ApiPublicHooksAnalyzeSentimentRoute
   ApiPublicHooksAutoResolveRoute: typeof ApiPublicHooksAutoResolveRoute
   ApiPublicHooksAutoSuggestMarketsRoute: typeof ApiPublicHooksAutoSuggestMarketsRoute
@@ -706,6 +834,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/welcome': {
+      id: '/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof WelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -832,6 +967,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LearnAboutRouteImport
       parentRoute: typeof LearnRoute
     }
+    '/api/alerts': {
+      id: '/api/alerts'
+      path: '/api/alerts'
+      fullPath: '/api/alerts'
+      preLoaderRoute: typeof ApiAlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/users': {
       id: '/admin/users'
       path: '/users'
@@ -944,6 +1086,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedPortfolioRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/notifications': {
+      id: '/_authed/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthedNotificationsRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/_authed/news': {
       id: '/_authed/news'
       path: '/news'
@@ -986,12 +1135,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedMarketsIndexRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/api/payments/webhook': {
+      id: '/api/payments/webhook'
+      path: '/api/payments/webhook'
+      fullPath: '/api/payments/webhook'
+      preLoaderRoute: typeof ApiPaymentsWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payments/verify': {
+      id: '/api/payments/verify'
+      path: '/api/payments/verify'
+      fullPath: '/api/payments/verify'
+      preLoaderRoute: typeof ApiPaymentsVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payments/status': {
+      id: '/api/payments/status'
+      path: '/api/payments/status'
+      fullPath: '/api/payments/status'
+      preLoaderRoute: typeof ApiPaymentsStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payments/deposit': {
+      id: '/api/payments/deposit'
+      path: '/api/payments/deposit'
+      fullPath: '/api/payments/deposit'
+      preLoaderRoute: typeof ApiPaymentsDepositRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/notifications/preferences': {
+      id: '/api/notifications/preferences'
+      path: '/api/notifications/preferences'
+      fullPath: '/api/notifications/preferences'
+      preLoaderRoute: typeof ApiNotificationsPreferencesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/local/$': {
       id: '/api/local/$'
       path: '/api/local/$'
       fullPath: '/api/local/$'
       preLoaderRoute: typeof ApiLocalSplatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/alerts/check': {
+      id: '/api/alerts/check'
+      path: '/check'
+      fullPath: '/api/alerts/check'
+      preLoaderRoute: typeof ApiAlertsCheckRouteImport
+      parentRoute: typeof ApiAlertsRoute
+    }
+    '/api/alerts/$id': {
+      id: '/api/alerts/$id'
+      path: '/$id'
+      fullPath: '/api/alerts/$id'
+      preLoaderRoute: typeof ApiAlertsIdRouteImport
+      parentRoute: typeof ApiAlertsRoute
     }
     '/admin/markets/suggest': {
       id: '/admin/markets/suggest'
@@ -1157,6 +1355,7 @@ interface AuthedRouteChildren {
   AuthedKycRoute: typeof AuthedKycRoute
   AuthedLeaderboardRoute: typeof AuthedLeaderboardRoute
   AuthedNewsRoute: typeof AuthedNewsRoute
+  AuthedNotificationsRoute: typeof AuthedNotificationsRoute
   AuthedPortfolioRoute: typeof AuthedPortfolioRoute
   AuthedProfileRoute: typeof AuthedProfileRoute
   AuthedSupportRoute: typeof AuthedSupportRouteWithChildren
@@ -1171,6 +1370,7 @@ const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedKycRoute: AuthedKycRoute,
   AuthedLeaderboardRoute: AuthedLeaderboardRoute,
   AuthedNewsRoute: AuthedNewsRoute,
+  AuthedNotificationsRoute: AuthedNotificationsRoute,
   AuthedPortfolioRoute: AuthedPortfolioRoute,
   AuthedProfileRoute: AuthedProfileRoute,
   AuthedSupportRoute: AuthedSupportRouteWithChildren,
@@ -1207,6 +1407,20 @@ const LearnRouteChildren: LearnRouteChildren = {
 
 const LearnRouteWithChildren = LearnRoute._addFileChildren(LearnRouteChildren)
 
+interface ApiAlertsRouteChildren {
+  ApiAlertsIdRoute: typeof ApiAlertsIdRoute
+  ApiAlertsCheckRoute: typeof ApiAlertsCheckRoute
+}
+
+const ApiAlertsRouteChildren: ApiAlertsRouteChildren = {
+  ApiAlertsIdRoute: ApiAlertsIdRoute,
+  ApiAlertsCheckRoute: ApiAlertsCheckRoute,
+}
+
+const ApiAlertsRouteWithChildren = ApiAlertsRoute._addFileChildren(
+  ApiAlertsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRouteRoute: AdminRouteRouteWithChildren,
@@ -1217,7 +1431,14 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   SignupRoute: SignupRoute,
   TermsRoute: TermsRoute,
+  WelcomeRoute: WelcomeRoute,
+  ApiAlertsRoute: ApiAlertsRouteWithChildren,
   ApiLocalSplatRoute: ApiLocalSplatRoute,
+  ApiNotificationsPreferencesRoute: ApiNotificationsPreferencesRoute,
+  ApiPaymentsDepositRoute: ApiPaymentsDepositRoute,
+  ApiPaymentsStatusRoute: ApiPaymentsStatusRoute,
+  ApiPaymentsVerifyRoute: ApiPaymentsVerifyRoute,
+  ApiPaymentsWebhookRoute: ApiPaymentsWebhookRoute,
   ApiPublicHooksAnalyzeSentimentRoute: ApiPublicHooksAnalyzeSentimentRoute,
   ApiPublicHooksAutoResolveRoute: ApiPublicHooksAutoResolveRoute,
   ApiPublicHooksAutoSuggestMarketsRoute: ApiPublicHooksAutoSuggestMarketsRoute,

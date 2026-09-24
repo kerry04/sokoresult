@@ -18,6 +18,9 @@ export interface CarouselMarket {
   closesLabel: string;
   seed: string;
   demo?: boolean;
+  /** Current Soko model estimate. Absent = no signal yet. */
+  signalProb?: number | null;
+  signalConfidence?: number | null;
 }
 
 export const DEMO_MARKETS: CarouselMarket[] = [

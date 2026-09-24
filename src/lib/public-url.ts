@@ -6,4 +6,4 @@
  * (market pages, user profiles) use this absolute URL instead of
  * in-app <Link>s that would 404 on the admin domain.
  */
-export const PUBLIC_APP_URL = "https://sokoresult.vercel.app";
+export const PUBLIC_APP_URL = "https://sokoresult.com";

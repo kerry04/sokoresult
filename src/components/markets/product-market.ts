@@ -14,6 +14,10 @@ export interface ProductMarket {
   created_at: string;
   /** YES price points oldest → newest, with real recorded_at from price_history. May be empty. */
   history: PricePoint[];
+  /** Current Soko model estimate (market_signals.signal_prob). Null = no signal yet. */
+  signalProb?: number | null;
+  /** Model confidence 0..1. Null = no signal yet. */
+  signalConfidence?: number | null;
 }
 
 /** One real price observation from price_history — never synthesize timestamps. */

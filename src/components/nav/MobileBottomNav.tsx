@@ -1,14 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { BookOpen, PieChart, TrendingUp, User, Zap } from "lucide-react";
+import { useLang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-
-const ITEMS = [
-  { label: "Markets", to: "/", icon: TrendingUp },
-  { label: "Learn", to: "/learn", icon: BookOpen },
-  { label: "Trade", to: "/signup", icon: Zap, cta: true },
-  { label: "Portfolio", to: "/portfolio", icon: PieChart },
-  { label: "Profile", to: "/profile", icon: User },
-];
 
 /**
  * Native-feel bottom tab bar for mobile. Fixed, with safe-area padding so it
@@ -16,6 +9,15 @@ const ITEMS = [
  */
 export function MobileBottomNav() {
   const { pathname } = useLocation();
+  const { t } = useLang();
+
+  const ITEMS = [
+    { label: t("tabs.markets"), to: "/", icon: TrendingUp },
+    { label: t("tabs.learn"), to: "/learn", icon: BookOpen },
+    { label: t("tabs.trade"), to: "/signup", icon: Zap, cta: true },
+    { label: t("tabs.portfolio"), to: "/portfolio", icon: PieChart },
+    { label: t("tabs.profile"), to: "/profile", icon: User },
+  ];
 
   return (
     <nav
@@ -32,7 +34,7 @@ export function MobileBottomNav() {
               <Link
                 key={item.label}
                 to={item.to}
-                aria-label="Start trading"
+                aria-label={t("nav.startTrading")}
                 className="-mt-5 flex flex-col items-center gap-1 focus-visible:outline-none"
               >
                 <span className="flex h-12 w-12 items-center justify-center rounded-full bg-success text-success-foreground shadow-card ring-4 ring-background">

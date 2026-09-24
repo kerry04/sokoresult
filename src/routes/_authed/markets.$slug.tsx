@@ -3,7 +3,8 @@ import { friendlyError } from "@/lib/errors";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Heart, MessageSquare } from "lucide-react";
-import { MarketPriceChart } from "@/components/markets/MarketPriceChart";
+import { AiVsMarketChart } from "@/components/markets/AiVsMarketChart";
+import { PriceAlertSetter } from "@/components/markets/PriceAlertSetter";
 import { supabase } from "@/integrations/supabase/client";
 import { BackButton } from "@/components/common/BackButton";
 import { CandidateList, type OutcomeRow } from "@/components/markets/CandidateList";
@@ -347,11 +348,11 @@ function MarketDetailPage() {
           {/* Live activity strip */}
           <MarketActivityStrip marketId={market.id} />
 
-          {/* Chart — only for binary markets in v1 */}
+          {/* Chart — market crowd vs Soko model, binary markets in v1 */}
           {market.market_type === "binary" && (
             <div className="rounded-2xl border border-border bg-card p-3 sm:p-4">
               <div className="flex items-center justify-between mb-2 sm:mb-3 gap-2 flex-wrap">
-                <h3 className="font-semibold text-sm">YES probability</h3>
+                <h3 className="font-semibold text-sm">Market vs Soko model</h3>
                 <div className="flex gap-1 rounded-md border border-border p-1">
                   {RANGES.map((r) => (
                     <button
@@ -370,10 +371,23 @@ function MarketDetailPage() {
                 </div>
               </div>
               <div className="sm:hidden">
-                <MarketPriceChart points={filtered} height={180} />
+                <AiVsMarketChart
+                  marketId={market.id}
+                  points={filtered}
+                  currentYesPrice={Number(market.yes_price)}
+                  height={200}
+                />
               </div>
               <div className="hidden sm:block">
-                <MarketPriceChart points={filtered} height={220} />
+                <AiVsMarketChart
+                  marketId={market.id}
+                  points={filtered}
+                  currentYesPrice={Number(market.yes_price)}
+                  height={240}
+                />
+              </div>
+              <div className="mt-3">
+                <PriceAlertSetter marketId={market.id} currentYesPrice={Number(market.yes_price)} />
               </div>
             </div>
           )}
@@ -573,6 +587,7 @@ function TradePanel({ market, balance }: { market: Market; balance: number }) {
   const executeTrade = async () => {
     setSubmitting(true);
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped rpc function
       const { error } = await (supabase.rpc as any)("execute_lmsr_trade_binary", {
         _market_id: market.id,
         _outcome: outcome.toUpperCase(),

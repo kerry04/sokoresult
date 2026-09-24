@@ -16,6 +16,8 @@ import {
   formatTimeRemaining,
 } from "@/lib/format";
 import { priceChangePts, type ProductMarket } from "./product-market";
+import { ModelEdge } from "./ModelEdge";
+import { useLang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const ROTATE_MS = 7000;
@@ -46,6 +48,8 @@ function toCarouselMarket(m: ProductMarket): CarouselMarket {
     stats,
     closesLabel: formatTimeRemaining(m.closes_at),
     seed: m.id,
+    signalProb: m.signalProb ?? null,
+    signalConfidence: m.signalConfidence ?? null,
   };
 }
 
@@ -158,6 +162,7 @@ function ChromeRow({
 function MobileHero({ items, safeIndex, active, yesPct, poke }: HeroProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [sheetSide, setSheetSide] = useState<"yes" | "no">("yes");
+  const { t } = useLang();
 
   const openSheet = (side: "yes" | "no") => {
     setSheetSide(side);
@@ -207,19 +212,23 @@ function MobileHero({ items, safeIndex, active, yesPct, poke }: HeroProps) {
               className="text-[3rem] font-extrabold leading-none tracking-tight text-success"
             />
             <div className="pb-1">
-              <div className="text-xs font-bold uppercase tracking-[0.16em] text-success">Yes</div>
-              <div className="text-[11px] text-muted-foreground">chance</div>
+              <div className="text-xs font-bold uppercase tracking-[0.16em] text-success">
+                {t("hero.yes")}
+              </div>
+              <div className="text-[11px] text-muted-foreground">{t("hero.chance")}</div>
             </div>
           </div>
           <div className="pb-1 text-right text-[11px] leading-relaxed text-muted-foreground">
-            <div>Closes {active.closesLabel}</div>
+            <div>
+              {t("hero.closes")} {active.closesLabel}
+            </div>
             {!active.demo && (
               <Link
                 to="/markets/$slug"
                 params={{ slug: active.slug }}
                 className="mt-0.5 inline-flex items-center gap-1 font-semibold transition-colors hover:text-foreground"
               >
-                Details <ArrowRight className="h-3 w-3" aria-hidden />
+                {t("hero.details")} <ArrowRight className="h-3 w-3" aria-hidden />
               </Link>
             )}
           </div>
@@ -239,6 +248,16 @@ function MobileHero({ items, safeIndex, active, yesPct, poke }: HeroProps) {
           />
         </div>
 
+        {/* Soko model vs market — the comparison, compact */}
+        {!active.demo && (
+          <ModelEdge
+            yesPrice={active.yes_price}
+            signalProb={active.signalProb}
+            confidence={active.signalConfidence}
+            className="mt-2"
+          />
+        )}
+
         <div className="mt-2.5">
           <MarketStats items={active.stats} />
         </div>
@@ -252,7 +271,7 @@ function MobileHero({ items, safeIndex, active, yesPct, poke }: HeroProps) {
             className="flex items-center justify-between rounded-lg border border-success/50 bg-success/[0.08] px-3.5 py-3 transition-all duration-150 hover:-translate-y-px active:translate-y-0"
           >
             <span className="text-[13px] font-bold uppercase tracking-[0.12em] text-success">
-              Yes
+              {t("hero.yes")}
             </span>
             <span className="num text-[15px] font-bold tabular-nums text-success">
               {formatPrice(active.yes_price)}
@@ -265,7 +284,7 @@ function MobileHero({ items, safeIndex, active, yesPct, poke }: HeroProps) {
             className="flex items-center justify-between rounded-lg border border-destructive/50 bg-destructive/[0.08] px-3.5 py-3 transition-all duration-150 hover:-translate-y-px active:translate-y-0"
           >
             <span className="text-[13px] font-bold uppercase tracking-[0.12em] text-destructive">
-              No
+              {t("card.no")}
             </span>
             <span className="num text-[15px] font-bold tabular-nums text-destructive">
               {formatPrice(active.no_price)}
@@ -349,6 +368,7 @@ function DesktopHero({
   poke,
   smUp,
 }: HeroProps & { smUp: boolean }) {
+  const { t } = useLang();
   return (
     <div className="grid lg:grid-cols-[1.55fr_1fr]">
       {/* Left: identity → probability → movement */}
@@ -392,8 +412,10 @@ function DesktopHero({
             className="text-7xl font-extrabold tracking-tight text-success"
           />
           <div className="pb-2">
-            <div className="text-sm font-bold uppercase tracking-[0.16em] text-success">Yes</div>
-            <div className="mt-0.5 text-xs text-muted-foreground">chance</div>
+            <div className="text-sm font-bold uppercase tracking-[0.16em] text-success">
+              {t("hero.yes")}
+            </div>
+            <div className="mt-0.5 text-xs text-muted-foreground">{t("hero.chance")}</div>
           </div>
         </div>
 
@@ -411,19 +433,29 @@ function DesktopHero({
           <ProbabilityBar yesPct={yesPct} />
         </div>
 
+        {/* Soko model vs market — the comparison, compact */}
+        {!active.demo && (
+          <ModelEdge
+            yesPrice={active.yes_price}
+            signalProb={active.signalProb}
+            confidence={active.signalConfidence}
+            className="mt-2"
+          />
+        )}
+
         <div className="mt-3 sm:mt-4">
           <MarketStats items={active.stats} />
         </div>
 
         <p className="mt-3 text-xs text-muted-foreground">
-          Closes {active.closesLabel}
+          {t("hero.closes")} {active.closesLabel}
           {!active.demo && (
             <Link
               to="/markets/$slug"
               params={{ slug: active.slug }}
               className="ml-3 inline-flex items-center gap-1 font-semibold text-muted-foreground transition-colors hover:text-foreground"
             >
-              Market details <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+              {t("hero.details")} <ArrowRight className="h-3.5 w-3.5" aria-hidden />
             </Link>
           )}
         </p>
