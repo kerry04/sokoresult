@@ -7,6 +7,7 @@ import {
   TrendingUp, Users, Wallet, HeartPulse, CheckCircle2, XCircle, Circle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PUBLIC_APP_URL } from "@/lib/public-url";
 import { timeAgo } from "@/components/admin/news/types";
 
 export const Route = createFileRoute("/admin/")({
@@ -282,7 +283,7 @@ function AdminTerminal() {
                   <tr key={t.id} className="border-t border-border/30 hover:bg-card/50 transition">
                     <td className="p-2 text-muted-foreground">{new Date(t.created_at).toLocaleTimeString("en-KE", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</td>
                     <td className="p-2 truncate max-w-[120px]">
-                      <Link to="/u/$userId" params={{ userId: t.user_id }} className="hover:text-primary">{t.user_name}</Link>
+                      <a href={`${PUBLIC_APP_URL}/u/${t.user_id}`} className="hover:text-primary">{t.user_name}</a>
                     </td>
                     <td className={cn("p-2", t.side === "BUY" ? "text-success" : "text-destructive")}>{t.side}</td>
                     <td className="p-2 uppercase text-muted-foreground">{t.outcome}</td>
@@ -339,7 +340,7 @@ function AdminTerminal() {
                   return (
                     <tr key={m.id} className="border-t border-border/30 hover:bg-card/50 transition">
                       <td className="p-2 truncate max-w-[300px]">
-                        <Link to="/markets/$slug" params={{ slug: m.slug }} search={{}} className="hover:text-primary">{m.question}</Link>
+                        <a href={`${PUBLIC_APP_URL}/markets/${m.slug}`} className="hover:text-primary">{m.question}</a>
                       </td>
                       <td className={cn("p-2 text-right tabular-nums", yes >= 0.5 ? "text-success" : "text-destructive")}>
                         {(yes * 100).toFixed(1)}%

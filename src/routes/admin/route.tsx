@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { getAdminEnabled } from "@/lib/admin-gate.functions";
+import { PUBLIC_APP_URL } from "@/lib/public-url";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,6 +38,9 @@ export const Route = createFileRoute("/admin")({
   // The public deployment does not set ADMIN_ENABLED, so the entire admin
   // surface (including /admin/login) 404s there. The dedicated admin
   // project sets ADMIN_ENABLED=true.
+  head: () => ({
+    meta: [{ title: "SokoResult Admin" }],
+  }),
   beforeLoad: async () => {
     const enabled = await getAdminEnabled();
     if (!enabled) throw notFound();
@@ -136,12 +140,12 @@ function AdminLayout() {
         })}
         <div className="mt-auto space-y-1">
           <div className="px-3 py-2 text-[11px] text-muted-foreground truncate">{user?.email}</div>
-          <Link
-            to="/markets"
+          <a
+            href={PUBLIC_APP_URL}
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             ← Back to app
-          </Link>
+          </a>
           <Button
             variant="ghost"
             className="w-full justify-start text-muted-foreground"

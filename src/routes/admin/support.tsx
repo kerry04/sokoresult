@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { friendlyError } from "@/lib/errors";
 import { Send } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PUBLIC_APP_URL } from "@/lib/public-url";
 import { AttachmentUploader, AttachmentList, type AttachmentRow } from "@/components/support/Attachments";
 
 export const Route = createFileRoute("/admin/support")({
@@ -210,7 +211,13 @@ function AdminSupport() {
                 </div>
                 <h2 className="font-semibold mt-1">{selected.subject}</h2>
                 <div className="text-xs text-muted-foreground">
-                  User: <Link to="/u/$userId" params={{ userId: selected.user_id }} className="underline hover:text-foreground">{selected.user_id.slice(0, 8)}</Link>
+                  User:{" "}
+                  <a
+                    href={`${PUBLIC_APP_URL}/u/${selected.user_id}`}
+                    className="underline hover:text-foreground"
+                  >
+                    {selected.user_id.slice(0, 8)}
+                  </a>
                   {" · "}{selected.category}
                 </div>
               </div>

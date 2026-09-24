@@ -1,8 +1,17 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import {
+  Outlet,
+  Link,
+  createRootRoute,
+  HeadContent,
+  Scripts,
+  notFound,
+  redirect,
+} from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider, useTheme } from "@/lib/theme";
+import { getAdminEnabled } from "@/lib/admin-gate.functions";
 
 import appCss from "../styles.css?url";
 
@@ -28,7 +37,30 @@ function NotFoundComponent() {
   );
 }
 
+// Whether this deployment is the admin-only one. Cached per browser tab;
+// ADMIN_ENABLED never changes at runtime. On the server the env var is read
+// directly (zero cost); on the client it goes through the server function
+// once, so the public site pays no per-navigation penalty.
+let adminEnabledCache: boolean | null = null;
+
+async function isAdminDeployment(): Promise<boolean> {
+  if (typeof window === "undefined") return process.env.ADMIN_ENABLED === "true";
+  if (adminEnabledCache === null) adminEnabledCache = await getAdminEnabled();
+  return adminEnabledCache;
+}
+
 export const Route = createRootRoute({
+  beforeLoad: async ({ location }) => {
+    // Admin-only deployment: the public surface is disabled here so the
+    // admin domain never serves the marketing site or trading pages.
+    // The root path lands on the admin dashboard instead; /api stays
+    // reachable (admin UI uses it, cron hooks live there).
+    if (!(await isAdminDeployment())) return;
+    const pathname = location.pathname;
+    if (pathname === "/") throw redirect({ to: "/admin" });
+    if (pathname.startsWith("/admin") || pathname.startsWith("/api")) return;
+    throw notFound();
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },

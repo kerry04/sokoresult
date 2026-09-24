@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { PUBLIC_APP_URL } from "@/lib/public-url";
 import { formatKES, formatPercent } from "@/lib/format";
 
 export const Route = createFileRoute("/admin/edge")({
@@ -322,15 +323,13 @@ function EdgePage() {
                       </Badge>
                     </td>
                     <td className="text-right px-3 py-3">
-                      <Link
-                        to="/markets/$slug"
-                        params={{ slug: r.slug }}
-                        search={{ side: r.side, amount: r.bet_kes } as any}
+                      <a
+                        href={`${PUBLIC_APP_URL}/markets/${r.slug}?side=${r.side}&amount=${r.bet_kes}`}
                       >
                         <Button size="sm" variant="outline">
                           Open →
                         </Button>
-                      </Link>
+                      </a>
                     </td>
                   </tr>
                 ))}
