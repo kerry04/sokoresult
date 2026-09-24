@@ -18,6 +18,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MarketsIndexRouteImport } from './routes/markets.index'
 import { Route as LearnIndexRouteImport } from './routes/learn.index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as LearnSlippageRouteImport } from './routes/learn.slippage'
@@ -50,7 +51,6 @@ import { Route as AuthedLeaderboardRouteImport } from './routes/_authed/leaderbo
 import { Route as AuthedKycRouteImport } from './routes/_authed/kyc'
 import { Route as AuthedComingSoonRouteImport } from './routes/_authed/coming-soon'
 import { Route as AdminMarketsIndexRouteImport } from './routes/admin/markets.index'
-import { Route as AuthedMarketsIndexRouteImport } from './routes/_authed/markets.index'
 import { Route as ApiPaymentsWebhookRouteImport } from './routes/api/payments/webhook'
 import { Route as ApiPaymentsVerifyRouteImport } from './routes/api/payments/verify'
 import { Route as ApiPaymentsStatusRouteImport } from './routes/api/payments/status'
@@ -116,6 +116,11 @@ const AdminRouteRoute = AdminRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketsIndexRoute = MarketsIndexRouteImport.update({
+  id: '/markets/',
+  path: '/markets/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LearnIndexRoute = LearnIndexRouteImport.update({
@@ -278,11 +283,6 @@ const AdminMarketsIndexRoute = AdminMarketsIndexRouteImport.update({
   path: '/markets/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
-const AuthedMarketsIndexRoute = AuthedMarketsIndexRouteImport.update({
-  id: '/markets/',
-  path: '/markets/',
-  getParentRoute: () => AuthedRoute,
-} as any)
 const ApiPaymentsWebhookRoute = ApiPaymentsWebhookRouteImport.update({
   id: '/api/payments/webhook',
   path: '/api/payments/webhook',
@@ -441,6 +441,7 @@ export interface FileRoutesByFullPath {
   '/learn/slippage': typeof LearnSlippageRoute
   '/admin/': typeof AdminIndexRoute
   '/learn/': typeof LearnIndexRoute
+  '/markets/': typeof MarketsIndexRoute
   '/markets/$slug': typeof AuthedMarketsSlugRoute
   '/support/$ticketId': typeof AuthedSupportTicketIdRoute
   '/u/$userId': typeof AuthedUUserIdRoute
@@ -454,7 +455,6 @@ export interface FileRoutesByFullPath {
   '/api/payments/status': typeof ApiPaymentsStatusRoute
   '/api/payments/verify': typeof ApiPaymentsVerifyRoute
   '/api/payments/webhook': typeof ApiPaymentsWebhookRoute
-  '/markets/': typeof AuthedMarketsIndexRoute
   '/admin/markets/': typeof AdminMarketsIndexRoute
   '/admin/markets/$id/edit': typeof AdminMarketsIdEditRoute
   '/admin/markets/$id/resolve': typeof AdminMarketsIdResolveRoute
@@ -504,6 +504,7 @@ export interface FileRoutesByTo {
   '/learn/slippage': typeof LearnSlippageRoute
   '/admin': typeof AdminIndexRoute
   '/learn': typeof LearnIndexRoute
+  '/markets': typeof MarketsIndexRoute
   '/markets/$slug': typeof AuthedMarketsSlugRoute
   '/support/$ticketId': typeof AuthedSupportTicketIdRoute
   '/u/$userId': typeof AuthedUUserIdRoute
@@ -517,7 +518,6 @@ export interface FileRoutesByTo {
   '/api/payments/status': typeof ApiPaymentsStatusRoute
   '/api/payments/verify': typeof ApiPaymentsVerifyRoute
   '/api/payments/webhook': typeof ApiPaymentsWebhookRoute
-  '/markets': typeof AuthedMarketsIndexRoute
   '/admin/markets': typeof AdminMarketsIndexRoute
   '/admin/markets/$id/edit': typeof AdminMarketsIdEditRoute
   '/admin/markets/$id/resolve': typeof AdminMarketsIdResolveRoute
@@ -571,6 +571,7 @@ export interface FileRoutesById {
   '/learn/slippage': typeof LearnSlippageRoute
   '/admin/': typeof AdminIndexRoute
   '/learn/': typeof LearnIndexRoute
+  '/markets/': typeof MarketsIndexRoute
   '/_authed/markets/$slug': typeof AuthedMarketsSlugRoute
   '/_authed/support/$ticketId': typeof AuthedSupportTicketIdRoute
   '/_authed/u/$userId': typeof AuthedUUserIdRoute
@@ -584,7 +585,6 @@ export interface FileRoutesById {
   '/api/payments/status': typeof ApiPaymentsStatusRoute
   '/api/payments/verify': typeof ApiPaymentsVerifyRoute
   '/api/payments/webhook': typeof ApiPaymentsWebhookRoute
-  '/_authed/markets/': typeof AuthedMarketsIndexRoute
   '/admin/markets/': typeof AdminMarketsIndexRoute
   '/admin/markets/$id/edit': typeof AdminMarketsIdEditRoute
   '/admin/markets/$id/resolve': typeof AdminMarketsIdResolveRoute
@@ -638,6 +638,7 @@ export interface FileRouteTypes {
     | '/learn/slippage'
     | '/admin/'
     | '/learn/'
+    | '/markets/'
     | '/markets/$slug'
     | '/support/$ticketId'
     | '/u/$userId'
@@ -651,7 +652,6 @@ export interface FileRouteTypes {
     | '/api/payments/status'
     | '/api/payments/verify'
     | '/api/payments/webhook'
-    | '/markets/'
     | '/admin/markets/'
     | '/admin/markets/$id/edit'
     | '/admin/markets/$id/resolve'
@@ -701,6 +701,7 @@ export interface FileRouteTypes {
     | '/learn/slippage'
     | '/admin'
     | '/learn'
+    | '/markets'
     | '/markets/$slug'
     | '/support/$ticketId'
     | '/u/$userId'
@@ -714,7 +715,6 @@ export interface FileRouteTypes {
     | '/api/payments/status'
     | '/api/payments/verify'
     | '/api/payments/webhook'
-    | '/markets'
     | '/admin/markets'
     | '/admin/markets/$id/edit'
     | '/admin/markets/$id/resolve'
@@ -767,6 +767,7 @@ export interface FileRouteTypes {
     | '/learn/slippage'
     | '/admin/'
     | '/learn/'
+    | '/markets/'
     | '/_authed/markets/$slug'
     | '/_authed/support/$ticketId'
     | '/_authed/u/$userId'
@@ -780,7 +781,6 @@ export interface FileRouteTypes {
     | '/api/payments/status'
     | '/api/payments/verify'
     | '/api/payments/webhook'
-    | '/_authed/markets/'
     | '/admin/markets/'
     | '/admin/markets/$id/edit'
     | '/admin/markets/$id/resolve'
@@ -804,6 +804,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   TermsRoute: typeof TermsRoute
   ApiAlertsRoute: typeof ApiAlertsRouteWithChildren
+  MarketsIndexRoute: typeof MarketsIndexRoute
   ApiLocalSplatRoute: typeof ApiLocalSplatRoute
   ApiNotificationsPreferencesRoute: typeof ApiNotificationsPreferencesRoute
   ApiPaymentsDepositRoute: typeof ApiPaymentsDepositRoute
@@ -882,6 +883,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/markets/': {
+      id: '/markets/'
+      path: '/markets'
+      fullPath: '/markets/'
+      preLoaderRoute: typeof MarketsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/learn/': {
@@ -1107,13 +1115,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/markets/'
       preLoaderRoute: typeof AdminMarketsIndexRouteImport
       parentRoute: typeof AdminRouteRoute
-    }
-    '/_authed/markets/': {
-      id: '/_authed/markets/'
-      path: '/markets'
-      fullPath: '/markets/'
-      preLoaderRoute: typeof AuthedMarketsIndexRouteImport
-      parentRoute: typeof AuthedRoute
     }
     '/api/payments/webhook': {
       id: '/api/payments/webhook'
@@ -1342,7 +1343,6 @@ interface AuthedRouteChildren {
   AuthedWalletRoute: typeof AuthedWalletRoute
   AuthedMarketsSlugRoute: typeof AuthedMarketsSlugRoute
   AuthedUUserIdRoute: typeof AuthedUUserIdRoute
-  AuthedMarketsIndexRoute: typeof AuthedMarketsIndexRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
@@ -1357,7 +1357,6 @@ const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedWalletRoute: AuthedWalletRoute,
   AuthedMarketsSlugRoute: AuthedMarketsSlugRoute,
   AuthedUUserIdRoute: AuthedUUserIdRoute,
-  AuthedMarketsIndexRoute: AuthedMarketsIndexRoute,
 }
 
 const AuthedRouteWithChildren =
@@ -1412,6 +1411,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   TermsRoute: TermsRoute,
   ApiAlertsRoute: ApiAlertsRouteWithChildren,
+  MarketsIndexRoute: MarketsIndexRoute,
   ApiLocalSplatRoute: ApiLocalSplatRoute,
   ApiNotificationsPreferencesRoute: ApiNotificationsPreferencesRoute,
   ApiPaymentsDepositRoute: ApiPaymentsDepositRoute,

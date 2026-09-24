@@ -6,16 +6,49 @@ import { cn } from "@/lib/utils";
 import { Radio } from "lucide-react";
 import { MarketCardCinema, type CinemaMarket } from "@/components/markets/MarketCardCinema";
 import type { TapeItem } from "@/components/markets/NewsTape";
-import {
-  CATEGORY_LABEL,
-  formatKESCompact,
-  formatNumberCompact,
-} from "@/lib/format";
+import { useAuth } from "@/lib/auth-context";
+import { PublicHeader } from "@/components/nav/PublicHeader";
+import { AccountSidebar } from "@/components/nav/AccountSidebar";
+import { MobileBottomNav } from "@/components/nav/MobileBottomNav";
+import { CATEGORY_LABEL, formatKESCompact, formatNumberCompact } from "@/lib/format";
 
-export const Route = createFileRoute("/_authed/markets/")({
+export const Route = createFileRoute("/markets/")({
   head: () => ({ meta: [{ title: "Markets — SokoResult" }] }),
-  component: MarketsPage,
+  component: MarketsRoute,
 });
+
+/**
+ * The markets board is public — anyone can browse. Signed-in users get the
+ * account chrome (laptop sidebar); visitors get the public header.
+ * Trading itself stays gated at BUY via the draft ticket.
+ */
+function MarketsRoute() {
+  const { user, loading } = useAuth();
+  const board = <MarketsBoard />;
+
+  if (!loading && user) {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <div className="lg:hidden">
+          <PublicHeader />
+        </div>
+        <AccountSidebar />
+        <div className="lg:pl-60">
+          <main className="pb-[84px] lg:pb-0">{board}</main>
+        </div>
+        <MobileBottomNav />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <PublicHeader />
+      <main className="pb-[84px] lg:pb-0">{board}</main>
+      <MobileBottomNav />
+    </div>
+  );
+}
 
 interface MarketRow extends CinemaMarket {
   keywords: string[] | null;
@@ -23,7 +56,7 @@ interface MarketRow extends CinemaMarket {
 
 const CATS = ["all", "politics", "sports", "entertainment", "economics"];
 
-function MarketsPage() {
+function MarketsBoard() {
   const [markets, setMarkets] = useState<MarketRow[]>([]);
   const [history, setHistory] = useState<Record<string, number[]>>({});
   const [tapesByMarket, setTapesByMarket] = useState<Record<string, TapeItem[]>>({});
@@ -70,17 +103,26 @@ function MarketsPage() {
           _per_market: 6,
         });
         const tapeMap: Record<string, TapeItem[]> = {};
-        (matches ?? []).forEach((row: any) => {
-          const arr = tapeMap[row.market_id] ?? [];
-          arr.push({
-            id: row.article_id,
-            title: row.title,
-            url: row.url,
-            source: row.source,
-            published_at: row.published_at,
-          });
-          tapeMap[row.market_id] = arr;
-        });
+        (matches ?? []).forEach(
+          (row: {
+            market_id: string;
+            article_id: string;
+            title: string;
+            url: string;
+            source: string;
+            published_at: string;
+          }) => {
+            const arr = tapeMap[row.market_id] ?? [];
+            arr.push({
+              id: row.article_id,
+              title: row.title,
+              url: row.url,
+              source: row.source,
+              published_at: row.published_at,
+            });
+            tapeMap[row.market_id] = arr;
+          },
+        );
         setTapesByMarket(tapeMap);
       }
       setLoading(false);
@@ -95,13 +137,19 @@ function MarketsPage() {
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "raw_news_data" },
         (payload) => {
-          const n: any = payload.new;
+          const n = payload.new as {
+            id: string;
+            title: string;
+            url: string;
+            source: string;
+            published_at: string;
+            processed: boolean | null;
+            relevant_keywords: string[] | null;
+          };
           if (!n?.processed || !n?.relevant_keywords) return;
           const kws: string[] = n.relevant_keywords;
           const matched = marketsRef.current.filter(
-            (m) =>
-              m.keywords &&
-              m.keywords.some((k) => kws.includes(k.toLowerCase())),
+            (m) => m.keywords && m.keywords.some((k) => kws.includes(k.toLowerCase())),
           );
           if (matched.length === 0) return;
 
@@ -207,10 +255,7 @@ function MarketsPage() {
       {loading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-72 rounded-2xl border border-border bg-card animate-pulse"
-            />
+            <div key={i} className="h-72 rounded-2xl border border-border bg-card animate-pulse" />
           ))}
         </div>
       ) : (
@@ -245,9 +290,7 @@ function MarketsPage() {
 function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div>
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-        {label}
-      </div>
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className={cn("text-lg font-bold", accent && "text-success")}>{value}</div>
     </div>
   );

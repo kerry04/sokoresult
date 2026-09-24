@@ -46,7 +46,7 @@ function AuthedLayout() {
       <AccountSidebar />
       <div className="lg:pl-60">
         <KycBanner show={(profile?.kyc_tier ?? 0) === 0} />
-        <main className="pb-[84px] md:pb-0">
+        <main className="pb-[84px] lg:pb-0">
           <Outlet />
         </main>
       </div>
