@@ -51,7 +51,7 @@ export function PublicHeader() {
           <Button
             size="sm"
             asChild
-            className="bg-success font-semibold text-success-foreground hover:bg-success/90"
+            className="hidden bg-success font-semibold text-success-foreground hover:bg-success/90 sm:inline-flex"
           >
             <Link to="/signup">Start Trading</Link>
           </Button>

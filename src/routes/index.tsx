@@ -135,7 +135,7 @@ function LandingPage() {
         {/* Markets first — no marketing hero. */}
         <section
           aria-labelledby="markets-heading"
-          className="mx-auto max-w-7xl px-4 sm:px-6 pt-6 sm:pt-8"
+          className="mx-auto max-w-7xl px-4 sm:px-6 pt-4 sm:pt-8"
         >
           <div className="flex items-end justify-between gap-4">
             <div>
@@ -207,7 +207,11 @@ function MarketsSection({ markets, loading }: { markets: ProductMarket[]; loadin
         <CategoryRail active={cat} onChange={setCat} />
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Sort markets">
+      <div
+        className="no-scrollbar -mx-4 mt-3 flex flex-nowrap gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0 sm:pb-0"
+        role="group"
+        aria-label="Sort markets"
+      >
         {SORTS.map((s) => (
           <button
             key={s.key}
@@ -215,7 +219,7 @@ function MarketsSection({ markets, loading }: { markets: ProductMarket[]; loadin
             onClick={() => setSort(s.key)}
             aria-pressed={sort === s.key}
             className={cn(
-              "h-8 rounded-full border px-3 text-xs font-medium transition-colors",
+              "h-8 shrink-0 rounded-full border px-3 text-xs font-medium transition-colors",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success/60",
               sort === s.key
                 ? "border-success/50 bg-success/10 text-success"
@@ -319,7 +323,7 @@ function SiteFooter() {
               <Button
                 asChild
                 size="lg"
-                className="min-h-[48px] bg-success font-bold text-success-foreground hover:bg-success/90"
+                className="min-h-[48px] w-full bg-success font-bold text-success-foreground hover:bg-success/90 sm:w-auto"
               >
                 <Link to="/signup" search={{ redirect: "/" }}>
                   Start trading free <ArrowRight className="h-4 w-4" aria-hidden />

@@ -78,6 +78,20 @@ function AnimatedNumber({ value, className }: { value: number; className?: strin
   return <span className={cn("num tabular-nums", className)}>{display}%</span>;
 }
 
+/** Minimal matchMedia hook — no extra dependency for one responsive value. */
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(
+    () => typeof window !== "undefined" && window.matchMedia(query).matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const onChange = () => setMatches(mq.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, [query]);
+  return matches;
+}
+
 /**
  * The live market hero, ordered as: market identity → probability →
  * movement → trade. The question slides horizontally between markets while
@@ -99,6 +113,9 @@ export function FeaturedMarketCarousel({ markets }: { markets: ProductMarket[] }
   const safeIndex = Math.min(index, items.length - 1);
   const active = items[safeIndex];
   const yesPct = Math.round(active.yes_price * 100);
+  // The hero is a skyscraper on phones: shrink the chart so identity +
+  // probability + trade fit comfortably above the fold.
+  const smUp = useMediaQuery("(min-width: 640px)");
 
   const poke = useCallback(
     (next: number) => {
@@ -141,7 +158,7 @@ export function FeaturedMarketCarousel({ markets }: { markets: ProductMarket[] }
     >
       <div className="grid lg:grid-cols-[1.55fr_1fr]">
         {/* Left: identity → probability → movement */}
-        <div className="flex flex-col p-5 sm:p-7">
+        <div className="flex flex-col p-4 sm:p-7">
           {/* Identity chrome */}
           <div className="flex items-center justify-between gap-3">
             <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-success">
@@ -160,7 +177,7 @@ export function FeaturedMarketCarousel({ markets }: { markets: ProductMarket[] }
                 type="button"
                 onClick={() => poke(safeIndex - 1)}
                 aria-label="Previous market"
-                className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-all duration-150 hover:-translate-y-px hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success/60"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-all duration-150 hover:-translate-y-px hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success/60 sm:h-7 sm:w-7"
               >
                 <ChevronLeft className="h-4 w-4" aria-hidden />
               </button>
@@ -168,7 +185,7 @@ export function FeaturedMarketCarousel({ markets }: { markets: ProductMarket[] }
                 type="button"
                 onClick={() => poke(safeIndex + 1)}
                 aria-label="Next market"
-                className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-all duration-150 hover:-translate-y-px hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success/60"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-all duration-150 hover:-translate-y-px hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success/60 sm:h-7 sm:w-7"
               >
                 <ChevronRight className="h-4 w-4" aria-hidden />
               </button>
@@ -225,7 +242,7 @@ export function FeaturedMarketCarousel({ markets }: { markets: ProductMarket[] }
             <MarketChart
               seed={active.seed}
               probability={active.yes_price}
-              height={84}
+              height={smUp ? 84 : 60}
               className="opacity-80"
             />
           </div>
@@ -234,7 +251,7 @@ export function FeaturedMarketCarousel({ markets }: { markets: ProductMarket[] }
             <ProbabilityBar yesPct={yesPct} />
           </div>
 
-          <div className="mt-4">
+          <div className="mt-3 sm:mt-4">
             <MarketStats items={active.stats} />
           </div>
 
