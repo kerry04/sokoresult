@@ -6,15 +6,12 @@ import {
   Scripts,
   notFound,
   redirect,
-  useMatches,
 } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider, useTheme } from "@/lib/theme";
 import { LanguageProvider } from "@/lib/i18n";
-import { MobileBottomNav } from "@/components/nav/MobileBottomNav";
-import { PublicHeader } from "@/components/nav/PublicHeader";
 import { getAdminEnabled } from "@/lib/admin-gate.functions";
 
 import appCss from "../styles.css?url";
@@ -140,27 +137,11 @@ function RootComponent() {
     }
   }, []);
 
-  // Account area (all /_authed routes) gets the same header + bottom tab bar
-  // as the public board, on laptop and mobile. The nav components render
-  // their account variant (Wallet instead of Learn) for signed-in users.
-  const matches = useMatches();
-  const inAccountArea = matches.some((m) => m.routeId.startsWith("/_authed"));
-
   return (
     <ThemeProvider>
       <LanguageProvider>
         <AuthProvider>
-          {inAccountArea ? (
-            <div className="min-h-screen flex flex-col bg-background pb-[84px] md:pb-0">
-              <PublicHeader />
-              <main className="flex-1">
-                <Outlet />
-              </main>
-              <MobileBottomNav />
-            </div>
-          ) : (
-            <Outlet />
-          )}
+          <Outlet />
           <ThemedToaster />
         </AuthProvider>
       </LanguageProvider>

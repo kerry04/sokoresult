@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
+import { NotificationBell } from "@/components/engagement/NotificationBell";
 import { cn } from "@/lib/utils";
 
 /**
@@ -51,6 +52,7 @@ export function PublicHeader() {
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          {user && <NotificationBell />}
           {user ? (
             <Button
               variant="ghost"
