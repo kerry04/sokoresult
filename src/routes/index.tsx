@@ -13,6 +13,7 @@ import {
   RAIL_CATEGORIES,
 } from "@/components/markets/CategoryRail";
 import { ProductMarketCard } from "@/components/markets/ProductMarketCard";
+import { NewsTicker } from "@/components/markets/NewsTicker";
 import { EmptyMarketState } from "@/components/markets/EmptyMarketState";
 import { PaymentBadges } from "@/components/marketing/PaymentBadges";
 import {
@@ -62,7 +63,7 @@ function useOpenMarkets() {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    const load = async () => {
       const { data: m, count: c } = await supabase
         .from("markets")
         .select(
@@ -107,9 +108,16 @@ function useOpenMarkets() {
         );
         setLoading(false);
       }
-    })();
+    };
+    load();
+    // Keep the board live: refresh prices every 30s while the tab is visible,
+    // so odds glide in without a page reload once markets are open.
+    const id = setInterval(() => {
+      if (document.visibilityState === "visible") load();
+    }, 30_000);
     return () => {
       cancelled = true;
+      clearInterval(id);
     };
   }, []);
 
@@ -123,6 +131,7 @@ function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background pb-[84px] md:pb-0">
       <PublicHeader />
+      <NewsTicker />
       <main>
         {/* Markets first — no marketing hero. */}
         <section

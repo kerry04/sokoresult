@@ -295,6 +295,10 @@
   .animate-price-pulse {
     animation: none;
   }
+  /* News wire becomes a plain horizontal scroller when motion is off. */
+  .news-wire-viewport {
+    overflow-x: auto;
+  }
   *,
   *::before,
   *::after {
