@@ -4,21 +4,30 @@ import { useState } from "react";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
-import { LanguageToggle, useLang } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth-context";
+import { useLang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 /**
  * Compact product header for the public site. h-14, serious fintech feel.
  * Mobile gets a drawer menu here + a bottom tab bar (MobileBottomNav).
+ * Signed-in users get the account variant: Learn is replaced by Wallet and
+ * the auth buttons become a Profile link.
  */
 export function PublicHeader() {
   const [open, setOpen] = useState(false);
   const { t } = useLang();
+  const { user } = useAuth();
 
-  const NAV = [
-    { label: t("nav.markets"), to: "/", hash: undefined },
-    { label: t("nav.learn"), to: "/learn", hash: undefined },
-  ] as const;
+  const NAV: ReadonlyArray<{ label: string; to: string; hash: undefined }> = user
+    ? [
+        { label: t("nav.markets"), to: "/", hash: undefined },
+        { label: t("nav.wallet"), to: "/wallet", hash: undefined },
+      ]
+    : [
+        { label: t("nav.markets"), to: "/", hash: undefined },
+        { label: t("nav.learn"), to: "/learn", hash: undefined },
+      ];
 
   return (
     <header className="sticky top-0 z-40 h-14 border-b border-border/60 bg-background/85 backdrop-blur-xl">
@@ -41,23 +50,35 @@ export function PublicHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <LanguageToggle className="hidden sm:inline-flex" />
           <ThemeToggle />
-          <Button
-            variant="ghost"
-            size="sm"
-            asChild
-            className="hidden text-muted-foreground hover:text-foreground sm:inline-flex"
-          >
-            <Link to="/login">{t("nav.signin")}</Link>
-          </Button>
-          <Button
-            size="sm"
-            asChild
-            className="hidden bg-success font-semibold text-success-foreground hover:bg-success/90 sm:inline-flex"
-          >
-            <Link to="/signup">{t("nav.startTrading")}</Link>
-          </Button>
+          {user ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="hidden text-muted-foreground hover:text-foreground sm:inline-flex"
+            >
+              <Link to="/profile">{t("tabs.profile")}</Link>
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                asChild
+                className="hidden text-muted-foreground hover:text-foreground sm:inline-flex"
+              >
+                <Link to="/login">{t("nav.signin")}</Link>
+              </Button>
+              <Button
+                size="sm"
+                asChild
+                className="hidden bg-success font-semibold text-success-foreground hover:bg-success/90 sm:inline-flex"
+              >
+                <Link to="/signup">{t("nav.startTrading")}</Link>
+              </Button>
+            </>
+          )}
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
@@ -97,17 +118,23 @@ export function PublicHeader() {
             <span className="text-[15px] text-muted-foreground">{t("nav.appearance")}</span>
             <ThemeToggle />
           </div>
-          <div className="flex items-center justify-between px-3 py-3">
-            <span className="text-[15px] text-muted-foreground">{t("nav.language")}</span>
-            <LanguageToggle />
-          </div>
-          <Link
-            to="/login"
-            onClick={() => setOpen(false)}
-            className="rounded-lg px-3 py-3 text-[15px] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:hidden"
-          >
-            {t("nav.signin")}
-          </Link>
+          {user ? (
+            <Link
+              to="/profile"
+              onClick={() => setOpen(false)}
+              className="rounded-lg px-3 py-3 text-[15px] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:hidden"
+            >
+              {t("tabs.profile")}
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              onClick={() => setOpen(false)}
+              className="rounded-lg px-3 py-3 text-[15px] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:hidden"
+            >
+              {t("nav.signin")}
+            </Link>
+          )}
         </nav>
       </div>
     </header>
