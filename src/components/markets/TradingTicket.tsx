@@ -27,10 +27,11 @@ const SHARE_PRESETS = [1, 5, 10, 25, 50];
 
 /**
  * Professional trading ticket. Anyone can pick a side and a stake — the draft
- * is saved on-device, and the sign-in prompt only appears when BUY is pressed.
- * Signed-in users are handed to the real ticket on the market page with
- * their draft pre-filled. Business logic is identical to the original draft
- * ticket; only the presentation changed.
+ * is saved on-device. When BUY is pressed, anonymous users first get a full
+ * order preview; only after reviewing it are they asked to sign in, and only
+ * then are they pushed to the market page. Signed-in users are handed to the
+ * real ticket on the market page with their draft pre-filled. Business logic
+ * is identical to the original draft ticket; only the presentation changed.
  */
 export function TradingTicket({
   market,
@@ -202,13 +203,12 @@ export function TradingTicket({
         No account needed to draft. You sign in only when you buy.
       </p>
 
-      <AuthGateModal
+      <BuyFlowModal
         open={gateOpen}
         onOpenChange={setGateOpen}
-        question={market.question}
+        market={market}
         side={side}
         shares={cleanShares}
-        costLabel={formatKES(totalCents)}
       />
     </div>
   );
@@ -279,72 +279,167 @@ function PositionButton({
   );
 }
 
-function AuthGateModal({
+/**
+ * Two-step buy flow for anonymous users: first a full order preview, then —
+ * only after they review it — the sign-in prompt that pushes them onward.
+ */
+function BuyFlowModal({
   open,
   onOpenChange,
-  question,
+  market,
   side,
   shares,
-  costLabel,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  question: string;
+  market: TicketMarket;
   side: DraftSide;
   shares: number;
-  costLabel: string;
 }) {
+  const [step, setStep] = useState<"preview" | "auth">("preview");
+  const isYes = side === "yes";
+
+  const price = isYes ? market.yes_price : market.no_price;
+  const grossCents = Math.round(price * 10000 * shares);
+  const feeCents = Math.round((grossCents * 300) / 10000);
+  const totalCents = grossCents + feeCents;
+  const payoutKsh = shares * 100;
+  const profitKsh = Math.max(0, payoutKsh - totalCents / 100);
+
+  const close = (v: boolean) => {
+    onOpenChange(v);
+    // Reset to the preview step after the close animation, so the next
+    // open always starts at the order review.
+    if (!v) window.setTimeout(() => setStep("preview"), 250);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={close}>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-xl">Your prediction is ready</DialogTitle>
-          <DialogDescription>
-            Create a free account or log in to place it. Your draft stays saved on this device.
-          </DialogDescription>
-        </DialogHeader>
+        {step === "preview" ? (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-xl">Review your trade</DialogTitle>
+              <DialogDescription>
+                Check the numbers before you continue — no account needed to look.
+              </DialogDescription>
+            </DialogHeader>
 
-        <div className="rounded-xl border border-border bg-background/60 p-4">
-          <p className="line-clamp-2 text-sm font-semibold leading-snug">{question}</p>
-          <div className="num mt-2.5 flex items-center gap-2 text-sm">
-            <span
-              className={cn(
-                "rounded-md px-2 py-0.5 text-xs font-bold uppercase tracking-wider",
-                side === "yes"
-                  ? "bg-success/15 text-success"
-                  : "bg-destructive/15 text-destructive",
-              )}
+            <div className="rounded-xl border border-border bg-background/60 p-4">
+              <p className="line-clamp-2 text-sm font-semibold leading-snug">{market.question}</p>
+
+              <div className="num mt-3 space-y-1.5 text-sm tabular-nums">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Position</span>
+                  <span className="flex items-center gap-2">
+                    <span
+                      className={cn(
+                        "rounded-md px-2 py-0.5 text-xs font-bold uppercase tracking-wider",
+                        isYes ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive",
+                      )}
+                    >
+                      {side}
+                    </span>
+                    <span className="text-muted-foreground">@ {formatPrice(price)}</span>
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Shares</span>
+                  <span className="font-semibold">{shares}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span className="font-semibold">{formatKES(grossCents)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Fee (3%)</span>
+                  <span className="font-semibold">{formatKES(feeCents)}</span>
+                </div>
+                <div className="flex items-center justify-between border-t border-border/60 pt-2">
+                  <span className="font-semibold">Total cost</span>
+                  <span className="text-base font-extrabold">{formatKES(totalCents)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">If {isYes ? "Yes" : "No"} wins</span>
+                  <span className="font-bold text-success">
+                    KSh {payoutKsh.toLocaleString("en-KE")}
+                    {profitKsh > 0 && (
+                      <span> (+{Math.round(profitKsh).toLocaleString("en-KE")})</span>
+                    )}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              size="lg"
+              onClick={() => setStep("auth")}
+              className="min-h-[48px] w-full bg-success font-bold text-success-foreground hover:bg-success/90"
             >
-              {side}
-            </span>
-            <span className="text-muted-foreground">
-              {shares} {shares === 1 ? "share" : "shares"}
-            </span>
-            <span className="ml-auto font-bold text-foreground">{costLabel}</span>
-          </div>
-        </div>
+              Continue <ArrowRight className="h-4 w-4" aria-hidden />
+            </Button>
+            <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
+              You'll sign in only when you place the trade. Your draft stays saved on this device.
+            </p>
+          </>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-xl">Your prediction is ready</DialogTitle>
+              <DialogDescription>
+                Create a free account or log in to place it. Your draft stays saved on this device.
+              </DialogDescription>
+            </DialogHeader>
 
-        <ul className="space-y-1.5 text-sm text-muted-foreground">
-          <li>· Free demo account with KSh 10,000 to practice</li>
-          <li>· No card required to start</li>
-        </ul>
+            <div className="rounded-xl border border-border bg-background/60 p-4">
+              <p className="line-clamp-2 text-sm font-semibold leading-snug">{market.question}</p>
+              <div className="num mt-2.5 flex items-center gap-2 text-sm">
+                <span
+                  className={cn(
+                    "rounded-md px-2 py-0.5 text-xs font-bold uppercase tracking-wider",
+                    isYes ? "bg-success/15 text-success" : "bg-destructive/15 text-destructive",
+                  )}
+                >
+                  {side}
+                </span>
+                <span className="text-muted-foreground">
+                  {shares} {shares === 1 ? "share" : "shares"}
+                </span>
+                <span className="ml-auto font-bold text-foreground">{formatKES(totalCents)}</span>
+              </div>
+            </div>
 
-        <div className="flex flex-col gap-2.5">
-          <Button
-            asChild
-            size="lg"
-            className="min-h-[48px] bg-success font-bold text-success-foreground hover:bg-success/90"
-          >
-            <Link to="/signup" search={{ redirect: "/" }}>
-              Create free account <ArrowRight className="h-4 w-4" aria-hidden />
-            </Link>
-          </Button>
-          <Button asChild size="lg" variant="outline" className="min-h-[48px]">
-            <Link to="/login" search={{ redirect: "/" }}>
-              Log in
-            </Link>
-          </Button>
-        </div>
+            <ul className="space-y-1.5 text-sm text-muted-foreground">
+              <li>· Free demo account with KSh 10,000 to practice</li>
+              <li>· No card required to start</li>
+            </ul>
+
+            <div className="flex flex-col gap-2.5">
+              <Button
+                asChild
+                size="lg"
+                className="min-h-[48px] bg-success font-bold text-success-foreground hover:bg-success/90"
+              >
+                <Link to="/signup" search={{ redirect: "/" }}>
+                  Create free account <ArrowRight className="h-4 w-4" aria-hidden />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="min-h-[48px]">
+                <Link to="/login" search={{ redirect: "/" }}>
+                  Log in
+                </Link>
+              </Button>
+              <button
+                type="button"
+                onClick={() => setStep("preview")}
+                className="mx-auto text-xs font-semibold text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+              >
+                Back to review
+              </button>
+            </div>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
