@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
 import okoCoin from "@/assets/oko-coin.png";
-import visaLogo from "@/assets/visa.png";
+import visaLogo from "@/assets/visa-logo.svg";
+import mastercardLogo from "@/assets/mastercard-logo.svg";
+import mpesaLogo from "@/assets/mpesa-logo.png";
 
 /* Compact, neat payment chips. Each chip is a small rounded card with a clean
    logo lockup — matching a refined trader-product aesthetic. */
@@ -35,18 +37,8 @@ function Chip({
 
 function MpesaChip() {
   return (
-    <Chip bg="oklch(0.18 0.025 280)">
-      <span className="inline-flex items-center gap-1.5">
-        <span
-          className="inline-flex h-5 w-5 items-center justify-center rounded-md text-white font-black text-[11px]"
-          style={{ background: "linear-gradient(180deg, #58c060, #2f8a37)" }}
-        >
-          M
-        </span>
-        <span className="font-bold text-[13px] tracking-wide text-foreground">
-          PESA
-        </span>
-      </span>
+    <Chip bg="#ffffff">
+      <img src={mpesaLogo} alt="M-PESA" className="h-6 w-auto object-contain" draggable={false} />
     </Chip>
   );
 }
@@ -54,19 +46,20 @@ function MpesaChip() {
 function VisaChip() {
   return (
     <Chip bg="#ffffff">
-      <img src={visaLogo} alt="Visa" className="h-6 w-auto object-contain" draggable={false} />
+      <img src={visaLogo} alt="Visa" className="h-5 w-auto object-contain" draggable={false} />
     </Chip>
   );
 }
 
 function MastercardChip() {
   return (
-    <Chip bg="oklch(0.18 0.025 280)">
-      <svg viewBox="0 0 36 22" className="h-5 w-auto" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="14" cy="11" r="9" fill="#EB001B" />
-        <circle cx="22" cy="11" r="9" fill="#F79E1B" />
-        <path d="M18 4.5a9 9 0 0 0 0 13 9 9 0 0 0 0-13Z" fill="#FF5F00" />
-      </svg>
+    <Chip bg="#ffffff">
+      <img
+        src={mastercardLogo}
+        alt="Mastercard"
+        className="h-6 w-auto object-contain"
+        draggable={false}
+      />
     </Chip>
   );
 }

@@ -299,23 +299,23 @@ function SiteFooter() {
             src="/images/nairobi-dusk.jpg"
             alt="Nairobi skyline at dusk, city lights"
             loading="lazy"
-            className="h-64 w-full object-cover sm:h-80"
+            className="h-52 w-full object-cover sm:h-64"
           />
           <div
             className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10"
             aria-hidden
           />
-          <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-10">
+          <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-8">
             <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/70">
               SokoResult
             </p>
-            <h2 className="mt-2 max-w-xl text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-              Trade what you know.
+            <h2 className="mt-1.5 max-w-xl text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
+              Put your money where your mouth is.
             </h2>
-            <p className="mt-2 max-w-lg text-sm leading-relaxed text-white/75 sm:text-base">
+            <p className="mt-1.5 max-w-lg text-sm leading-relaxed text-white/75">
               Kenyan politics, football, business and culture — priced by the crowd, settled in KES.
             </p>
-            <div className="mt-5">
+            <div className="mt-4">
               <Button
                 asChild
                 size="lg"
