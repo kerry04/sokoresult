@@ -87,7 +87,7 @@ export function DraftTradeTicket({
           Your prediction
         </span>
         {hasStoredDraft && (
-          <span className="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground/90">
+          <span className="rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
             Draft saved
           </span>
         )}
