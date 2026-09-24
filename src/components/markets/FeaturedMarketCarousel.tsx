@@ -173,7 +173,7 @@ export function FeaturedMarketCarousel({ markets }: { markets: ProductMarket[] }
     >
       <div className="grid lg:grid-cols-[1.55fr_1fr]">
         {/* Left: identity → probability → movement */}
-        <div className="flex flex-col p-4 sm:p-7">
+        <div className="flex flex-col p-4 sm:p-6 lg:p-7">
           {/* Identity chrome */}
           <div className="flex items-center justify-between gap-3">
             <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-success">
@@ -232,7 +232,7 @@ export function FeaturedMarketCarousel({ markets }: { markets: ProductMarket[] }
                       </span>
                     )}
                   </div>
-                  <h2 className="mt-2 min-h-[4.2rem] max-w-2xl text-xl font-bold leading-[1.25] tracking-tight sm:min-h-[4.6rem] sm:text-2xl">
+                  <h2 className="mt-2 min-h-[4.2rem] max-w-2xl text-[clamp(1.125rem,4.6vw,1.25rem)] font-bold leading-[1.25] tracking-tight sm:min-h-[4.6rem] sm:text-2xl">
                     {m.question}
                   </h2>
                 </div>
@@ -240,11 +240,12 @@ export function FeaturedMarketCarousel({ markets }: { markets: ProductMarket[] }
             </div>
           </div>
 
-          {/* Probability — the visual anchor */}
+          {/* Probability — the visual anchor. Fluid type: scales with the
+              viewport on phones instead of jumping at the sm breakpoint. */}
           <div className="mt-1 flex items-end gap-3">
             <AnimatedNumber
               value={yesPct}
-              className="text-6xl font-extrabold tracking-tight text-success sm:text-7xl"
+              className="text-[clamp(3.5rem,18vw,4.5rem)] font-extrabold tracking-tight text-success sm:text-7xl"
             />
             <div className="pb-2">
               <div className="text-sm font-bold uppercase tracking-[0.16em] text-success">Yes</div>

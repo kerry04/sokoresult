@@ -1,4 +1,5 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider, useTheme } from "@/lib/theme";
@@ -39,6 +40,11 @@ export const Route = createRootRoute({
           "Trade outcomes on African politics, sports, entertainment, and culture. Put your money where your mouth is.",
       },
       { name: "author", content: "SokoResult" },
+      { name: "theme-color", content: "#06060f" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "SokoResult" },
       { property: "og:title", content: "SokoResult — Africa's Prediction Market" },
       {
         property: "og:description",
@@ -65,6 +71,9 @@ export const Route = createRootRoute({
         href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;700&display=swap",
       },
       { rel: "stylesheet", href: appCss },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "icon", type: "image/png", sizes: "192x192", href: "/icons/icon-192.png" },
+      { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
     ],
   }),
   shellComponent: RootShell,
@@ -88,6 +97,16 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  // Installable PWA: register the conservative service worker (static assets
+  // only — never API/Supabase/navigations). Production only, to keep dev clean.
+  useEffect(() => {
+    if (import.meta.env.PROD && "serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {
+        /* offline support is a nice-to-have; never break the app over it */
+      });
+    }
+  }, []);
+
   return (
     <ThemeProvider>
       <AuthProvider>

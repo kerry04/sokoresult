@@ -49,15 +49,16 @@ function Stat({ label, value, tone = "flat" }: StatItem) {
 }
 
 /**
- * Compact trading statistics — inline, mono numerals, no cards.
- * Values briefly flash green/red when they move.
+ * Compact trading statistics. On phones the stats sit in an even 3-column
+ * row (no dividers, which look broken when wrapped); sm+ keeps the
+ * inline divided row. Values briefly flash green/red when they move.
  */
 export function MarketStats({ items, className }: { items: StatItem[]; className?: string }) {
   return (
     <dl
       className={cn(
-        "flex flex-wrap items-center gap-x-5 gap-y-2 divide-x divide-border/50",
-        "[&>*:not(:first-child)]:pl-5",
+        "grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-x-5 sm:gap-y-2 sm:divide-x sm:divide-border/50",
+        "sm:[&>*:not(:first-child)]:pl-5",
         className,
       )}
     >

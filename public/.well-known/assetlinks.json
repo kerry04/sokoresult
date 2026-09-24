@@ -1,0 +1,1 @@
+[{"relation":["delegate_permission/common.handle_all_urls"],"target":{"namespace":"android_app","package_name":"TODO: set the real applicationId, e.g. app.sokoresult.twa","sha256_cert_fingerprints":["TODO: replace with the SHA-256 fingerprint of the Android app signing key"]}}]
