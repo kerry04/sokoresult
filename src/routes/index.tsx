@@ -292,8 +292,52 @@ function SiteFooter() {
 
   return (
     <footer className="border-t border-border/60 mt-auto bg-card/20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-14">
-        <div className="grid gap-10 md:gap-8 md:grid-cols-12">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-10 pb-14">
+        {/* Cinematic banner — Nairobi at dusk */}
+        <div className="relative overflow-hidden rounded-2xl border border-border/60 shadow-card">
+          <img
+            src="/images/nairobi-dusk.jpg"
+            alt="Nairobi skyline at dusk, city lights"
+            loading="lazy"
+            className="h-64 w-full object-cover sm:h-80"
+          />
+          <div
+            className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10"
+            aria-hidden
+          />
+          <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-10">
+            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/70">
+              SokoResult
+            </p>
+            <h2 className="mt-2 max-w-xl text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+              Trade what you know.
+            </h2>
+            <p className="mt-2 max-w-lg text-sm leading-relaxed text-white/75 sm:text-base">
+              Kenyan politics, football, business and culture — priced by the crowd, settled in KES.
+            </p>
+            <div className="mt-5">
+              <Button
+                asChild
+                size="lg"
+                className="min-h-[48px] bg-success font-bold text-success-foreground hover:bg-success/90"
+              >
+                <Link to="/signup" search={{ redirect: "/" }}>
+                  Start trading free <ArrowRight className="h-4 w-4" aria-hidden />
+                </Link>
+              </Button>
+            </div>
+          </div>
+          <a
+            href="https://commons.wikimedia.org/wiki/File:Nairobi_night_skyline_at_dusk_.jpg"
+            target="_blank"
+            rel="noreferrer"
+            className="absolute bottom-2 right-3 text-[10px] text-white/50 underline-offset-2 hover:text-white/80 hover:underline"
+          >
+            Photo: Nbi101 / Wikimedia Commons (CC BY-SA 4.0)
+          </a>
+        </div>
+
+        <div className="mt-12 grid gap-10 md:gap-8 md:grid-cols-12">
           <div className="md:col-span-4">
             <Logo size="md" />
             <p className="mt-4 text-sm text-muted-foreground max-w-xs leading-relaxed">
