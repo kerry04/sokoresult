@@ -149,7 +149,7 @@ function LandingPage() {
   const { t } = useLang();
 
   return (
-    <div className="min-h-screen flex flex-col bg-background pb-[84px] lg:pb-0">
+    <div className="min-h-screen flex flex-col bg-background pb-[84px] md:pb-0">
       <PublicHeader />
       <NewsTicker />
       <main>

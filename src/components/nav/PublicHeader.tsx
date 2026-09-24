@@ -26,7 +26,7 @@ export function PublicHeader() {
         { label: t("nav.wallet"), to: "/wallet", hash: undefined },
       ]
     : [
-        { label: t("nav.markets"), to: "/markets", hash: undefined },
+        { label: t("nav.markets"), to: "/", hash: undefined },
         { label: t("nav.learn"), to: "/learn", hash: undefined },
       ];
 
