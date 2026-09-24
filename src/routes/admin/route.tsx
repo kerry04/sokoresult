@@ -1,7 +1,15 @@
-import { createFileRoute, Outlet, Link, useLocation, useNavigate } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  notFound,
+  Outlet,
+  Link,
+  useLocation,
+  useNavigate,
+} from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
+import { getAdminEnabled } from "@/lib/admin-gate.functions";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +34,13 @@ import {
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin")({
+  // The public deployment does not set ADMIN_ENABLED, so the entire admin
+  // surface (including /admin/login) 404s there. The dedicated admin
+  // project sets ADMIN_ENABLED=true.
+  beforeLoad: async () => {
+    const enabled = await getAdminEnabled();
+    if (!enabled) throw notFound();
+  },
   component: AdminLayout,
 });
 
