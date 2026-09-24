@@ -136,6 +136,19 @@ export function FeaturedMarketCarousel({ markets }: { markets: ProductMarket[] }
 
   const paused = hovering || cooling || reduced;
 
+  // Swipe to navigate on touch devices. Vertical scrolling is untouched —
+  // we only read the horizontal delta on touchend, never preventDefault.
+  const touchX = useRef<number | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchX.current = e.touches[0].clientX;
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchX.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchX.current;
+    touchX.current = null;
+    if (Math.abs(dx) > 40) poke(safeIndex + (dx < 0 ? 1 : -1));
+  };
+
   useEffect(() => {
     if (paused || items.length < 2) return;
     const id = window.setInterval(() => {
@@ -150,11 +163,13 @@ export function FeaturedMarketCarousel({ markets }: { markets: ProductMarket[] }
     <article
       aria-roledescription="carousel"
       aria-label="Featured markets"
-      className="overflow-hidden rounded-xl border border-border bg-card shadow-card"
+      className="overflow-hidden rounded-xl border border-border bg-card shadow-card touch-pan-y"
       onPointerEnter={() => setHovering(true)}
       onPointerLeave={() => setHovering(false)}
       onFocusCapture={() => setHovering(true)}
       onBlurCapture={() => setHovering(false)}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
     >
       <div className="grid lg:grid-cols-[1.55fr_1fr]">
         {/* Left: identity → probability → movement */}
