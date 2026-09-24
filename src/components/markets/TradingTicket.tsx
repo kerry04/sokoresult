@@ -37,15 +37,20 @@ export function TradingTicket({
   market,
   variant = "card",
   demo = false,
+  defaultSide,
 }: {
   market: TicketMarket;
   variant?: "card" | "wide";
   /** Demo/preview markets have no real market page — never navigate to one. */
   demo?: boolean;
+  /** Preselects the side when the ticket mounts (e.g. hero YES/NO buttons). */
+  defaultSide?: DraftSide;
 }) {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [side, setSide] = useState<DraftSide>(() => getDraft(market.id)?.side ?? "yes");
+  const [side, setSide] = useState<DraftSide>(
+    () => defaultSide ?? getDraft(market.id)?.side ?? "yes",
+  );
   const [shares, setShares] = useState<number>(() => getDraft(market.id)?.shares ?? 10);
   const [hasStoredDraft, setHasStoredDraft] = useState(() => getDraft(market.id) !== null);
   const [gateOpen, setGateOpen] = useState(false);
