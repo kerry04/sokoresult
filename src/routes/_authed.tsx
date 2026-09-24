@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { recordSessionOnce } from "@/lib/fingerprint";
 import { AchievementModal } from "@/components/engagement/AchievementModal";
 import { PublicHeader } from "@/components/nav/PublicHeader";
-import { AccountSidebar } from "@/components/nav/AccountSidebar";
 import { MobileBottomNav } from "@/components/nav/MobileBottomNav";
 
 export const Route = createFileRoute("/_authed")({
@@ -37,19 +36,14 @@ function AuthedLayout() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Laptops get the account sidebar; phones and tablets keep the shared
-          top header + bottom tab bar. Signed-in users get the account variant
-          (Wallet instead of Learn, Markets routes to the terminal board). */}
-      <div className="lg:hidden">
-        <PublicHeader />
-      </div>
-      <AccountSidebar />
-      <div className="lg:pl-60">
-        <KycBanner show={(profile?.kyc_tier ?? 0) === 0} />
-        <main className="pb-[84px] md:pb-0">
-          <Outlet />
-        </main>
-      </div>
+      {/* Same nav as the public board: top header on laptop, bottom tab bar
+          on phones. No sidebar, no drawer menu — signed-in users get the
+          account variant (Wallet instead of Learn). */}
+      <PublicHeader />
+      <KycBanner show={(profile?.kyc_tier ?? 0) === 0} />
+      <main className="pb-[84px] md:pb-0">
+        <Outlet />
+      </main>
       <MobileBottomNav />
       <AchievementModal
         unlock={topAchievement}
