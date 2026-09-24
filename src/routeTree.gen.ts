@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -75,11 +74,6 @@ import { Route as ApiPublicHooksAnalyzeSentimentRouteImport } from './routes/api
 import { Route as AdminMarketsIdResolveRouteImport } from './routes/admin/markets.$id.resolve'
 import { Route as AdminMarketsIdEditRouteImport } from './routes/admin/markets.$id.edit'
 
-const WelcomeRoute = WelcomeRouteImport.update({
-  id: '/welcome',
-  path: '/welcome',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -416,7 +410,6 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
-  '/welcome': typeof WelcomeRoute
   '/coming-soon': typeof AuthedComingSoonRoute
   '/kyc': typeof AuthedKycRoute
   '/leaderboard': typeof AuthedLeaderboardRoute
@@ -480,7 +473,6 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
-  '/welcome': typeof WelcomeRoute
   '/coming-soon': typeof AuthedComingSoonRoute
   '/kyc': typeof AuthedKycRoute
   '/leaderboard': typeof AuthedLeaderboardRoute
@@ -548,7 +540,6 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
-  '/welcome': typeof WelcomeRoute
   '/_authed/coming-soon': typeof AuthedComingSoonRoute
   '/_authed/kyc': typeof AuthedKycRoute
   '/_authed/leaderboard': typeof AuthedLeaderboardRoute
@@ -616,7 +607,6 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/signup'
     | '/terms'
-    | '/welcome'
     | '/coming-soon'
     | '/kyc'
     | '/leaderboard'
@@ -680,7 +670,6 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/signup'
     | '/terms'
-    | '/welcome'
     | '/coming-soon'
     | '/kyc'
     | '/leaderboard'
@@ -747,7 +736,6 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/signup'
     | '/terms'
-    | '/welcome'
     | '/_authed/coming-soon'
     | '/_authed/kyc'
     | '/_authed/leaderboard'
@@ -815,7 +803,6 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   SignupRoute: typeof SignupRoute
   TermsRoute: typeof TermsRoute
-  WelcomeRoute: typeof WelcomeRoute
   ApiAlertsRoute: typeof ApiAlertsRouteWithChildren
   ApiLocalSplatRoute: typeof ApiLocalSplatRoute
   ApiNotificationsPreferencesRoute: typeof ApiNotificationsPreferencesRoute
@@ -834,13 +821,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/welcome': {
-      id: '/welcome'
-      path: '/welcome'
-      fullPath: '/welcome'
-      preLoaderRoute: typeof WelcomeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -1431,7 +1411,6 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   SignupRoute: SignupRoute,
   TermsRoute: TermsRoute,
-  WelcomeRoute: WelcomeRoute,
   ApiAlertsRoute: ApiAlertsRouteWithChildren,
   ApiLocalSplatRoute: ApiLocalSplatRoute,
   ApiNotificationsPreferencesRoute: ApiNotificationsPreferencesRoute,

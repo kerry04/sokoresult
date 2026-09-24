@@ -71,8 +71,8 @@ function OnboardingPage() {
       return;
     }
     await refreshProfile();
-    toast.success("Profile saved. Quick tour next.");
-    navigate({ to: "/welcome" });
+    toast.success("Profile saved. ID check next.");
+    navigate({ to: "/kyc" });
   };
 
   // Brand-new accounts: profile row is created by a DB trigger right after signup.

@@ -34,7 +34,6 @@ import {
   VolumeX,
   Flame,
   Trophy,
-  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AvatarCropDialog } from "@/components/profile/AvatarCropDialog";
@@ -423,18 +422,6 @@ function ProfilePage() {
           <div className="flex-1">
             <div className="text-sm font-medium">Learn</div>
             <div className="text-xs text-muted-foreground">How prediction markets work</div>
-          </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-        </Link>
-        <Link
-          to="/welcome"
-          search={{ replay: "1" }}
-          className="flex items-center gap-3 px-5 sm:px-6 py-4 min-h-12 hover:bg-accent/40 active:bg-accent/60 transition border-b border-border"
-        >
-          <Sparkles className="h-5 w-5 text-primary" />
-          <div className="flex-1">
-            <div className="text-sm font-medium">Replay the quick tour</div>
-            <div className="text-xs text-muted-foreground">The 60-second walkthrough, anytime</div>
           </div>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </Link>
