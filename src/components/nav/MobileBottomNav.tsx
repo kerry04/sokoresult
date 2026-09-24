@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { BookOpen, PieChart, TrendingUp, User, Wallet, Zap } from "lucide-react";
+import { BookOpen, Newspaper, PieChart, TrendingUp, User, Wallet, Zap } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useLang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -7,8 +7,9 @@ import { cn } from "@/lib/utils";
 /**
  * Native-feel bottom tab bar for mobile. Fixed, with safe-area padding so it
  * never covers content awkwardly. md+ is covered by the top header.
- * Signed-in users get the account variant: Learn is replaced by Wallet and
- * the Trade shortcut goes to the market board instead of signup.
+ * Signed-in users get the account variant: News replaces Markets, Learn is
+ * replaced by Wallet, and the Trade shortcut goes to the markets board
+ * instead of signup.
  */
 export function MobileBottomNav() {
   const { pathname } = useLocation();
@@ -17,9 +18,9 @@ export function MobileBottomNav() {
 
   const ITEMS = user
     ? [
-        { label: t("tabs.markets"), to: "/", icon: TrendingUp },
+        { label: "News", to: "/news", icon: Newspaper },
         { label: t("tabs.wallet"), to: "/wallet", icon: Wallet },
-        { label: t("tabs.trade"), to: "/", icon: Zap, cta: true },
+        { label: t("tabs.trade"), to: "/markets", icon: Zap, cta: true },
         { label: t("tabs.portfolio"), to: "/portfolio", icon: PieChart },
         { label: t("tabs.profile"), to: "/profile", icon: User },
       ]

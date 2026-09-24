@@ -22,7 +22,7 @@ export function PublicHeader() {
 
   const NAV: ReadonlyArray<{ label: string; to: string; hash: undefined }> = user
     ? [
-        { label: t("nav.markets"), to: "/", hash: undefined },
+        { label: t("nav.markets"), to: "/markets", hash: undefined },
         { label: t("nav.wallet"), to: "/wallet", hash: undefined },
       ]
     : [
