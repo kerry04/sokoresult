@@ -131,25 +131,25 @@
 
   --radius: 0.625rem;
 
-  /* Warm paper background, white market surfaces, charcoal text. */
-  --background: oklch(0.955 0.012 95);
-  --foreground: oklch(0.24 0.015 280);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.24 0.015 280);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.24 0.015 280);
+  /* Cool lavender paper background, white-violet market surfaces, charcoal text. */
+  --background: oklch(0.955 0.022 292);
+  --foreground: oklch(0.24 0.02 290);
+  --card: oklch(0.995 0.008 295);
+  --card-foreground: oklch(0.24 0.02 290);
+  --popover: oklch(0.995 0.008 295);
+  --popover-foreground: oklch(0.24 0.02 290);
 
   /* Brand purple stays constant across themes. */
   --primary: oklch(0.5 0.22 305);
   --primary-foreground: oklch(0.98 0.005 280);
   --primary-glow: oklch(0.65 0.25 305);
 
-  --secondary: oklch(0.93 0.012 95);
-  --secondary-foreground: oklch(0.24 0.015 280);
-  --muted: oklch(0.93 0.012 95);
-  --muted-foreground: oklch(0.47 0.015 280);
-  --accent: oklch(0.9 0.015 95);
-  --accent-foreground: oklch(0.24 0.015 280);
+  --secondary: oklch(0.93 0.025 292);
+  --secondary-foreground: oklch(0.24 0.02 290);
+  --muted: oklch(0.93 0.025 292);
+  --muted-foreground: oklch(0.47 0.03 292);
+  --accent: oklch(0.9 0.03 292);
+  --accent-foreground: oklch(0.24 0.02 290);
 
   /* Trading semantics — deepened for contrast on light surfaces. */
   --success: oklch(0.56 0.19 150);
@@ -161,8 +161,8 @@
   --mpesa: oklch(0.55 0.16 145);
   --accent-pink: oklch(0.62 0.2 350);
 
-  --border: oklch(0.87 0.012 95);
-  --input: oklch(0.9 0.01 95);
+  --border: oklch(0.86 0.025 290);
+  --input: oklch(0.9 0.02 292);
   --ring: oklch(0.55 0.22 305);
 
   --chart-1: oklch(0.56 0.19 150);
@@ -171,16 +171,22 @@
   --chart-4: oklch(0.68 0.16 80);
   --chart-5: oklch(0.6 0.14 200);
 
-  --sidebar: oklch(0.97 0.01 95);
-  --sidebar-foreground: oklch(0.24 0.015 280);
+  --sidebar: oklch(0.965 0.02 292);
+  --sidebar-foreground: oklch(0.24 0.02 290);
   --sidebar-primary: oklch(0.5 0.22 305);
   --sidebar-primary-foreground: oklch(0.98 0.005 280);
-  --sidebar-accent: oklch(0.93 0.012 95);
-  --sidebar-accent-foreground: oklch(0.24 0.015 280);
-  --sidebar-border: oklch(0.87 0.012 95);
+  --sidebar-accent: oklch(0.92 0.025 292);
+  --sidebar-accent-foreground: oklch(0.24 0.02 290);
+  --sidebar-border: oklch(0.86 0.025 290);
   --sidebar-ring: oklch(0.55 0.22 305);
 
-  --gradient-hero: linear-gradient(180deg, oklch(0.97 0.01 95) 0%, oklch(0.94 0.012 95) 100%);
+  --gradient-hero:
+    radial-gradient(
+      ellipse at top,
+      color-mix(in oklab, var(--primary) 12%, transparent) 0%,
+      transparent 55%
+    ),
+    linear-gradient(180deg, oklch(0.965 0.02 292) 0%, oklch(0.935 0.028 292) 100%);
   --gradient-primary: linear-gradient(135deg, var(--primary), var(--primary-glow));
   --shadow-glow: 0 0 40px -8px color-mix(in oklab, var(--primary) 45%, transparent);
   --shadow-card: 0 4px 24px -6px oklch(0 0 0 / 0.12);
