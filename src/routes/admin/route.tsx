@@ -42,7 +42,14 @@ export const Route = createFileRoute("/admin")({
     meta: [{ title: "SokoResult Admin" }],
   }),
   beforeLoad: async () => {
-    const enabled = await getAdminEnabled();
+    let enabled = false;
+    try {
+      enabled = await getAdminEnabled();
+    } catch {
+      // Fail closed: if the gate check itself errors, hide the admin
+      // surface (clean 404) instead of showing an error page.
+      enabled = false;
+    }
     if (!enabled) throw notFound();
   },
   component: AdminLayout,

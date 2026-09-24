@@ -43,7 +43,16 @@ let adminEnabledCache: boolean | null = null;
 
 async function isAdminDeployment(): Promise<boolean> {
   if (typeof window === "undefined") return process.env.ADMIN_ENABLED === "true";
-  if (adminEnabledCache === null) adminEnabledCache = await getAdminEnabled();
+  if (adminEnabledCache === null) {
+    try {
+      adminEnabledCache = await getAdminEnabled();
+    } catch {
+      // The admin gate must never take the whole site down: if the check
+      // itself fails (flaky network, cold start), fall through to public
+      // mode. The real admin lock stays in AdminLayout's role check.
+      adminEnabledCache = false;
+    }
+  }
   return adminEnabledCache;
 }
 
