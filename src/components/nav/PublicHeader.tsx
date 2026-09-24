@@ -3,6 +3,7 @@ import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -38,6 +39,7 @@ export function PublicHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <Button
             variant="ghost"
             size="sm"
@@ -88,6 +90,10 @@ export function PublicHeader() {
               {n.label}
             </Link>
           ))}
+          <div className="flex items-center justify-between px-3 py-3">
+            <span className="text-[15px] text-muted-foreground">Appearance</span>
+            <ThemeToggle />
+          </div>
           <Link
             to="/login"
             onClick={() => setOpen(false)}

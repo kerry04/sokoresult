@@ -6,7 +6,7 @@ import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { PublicHeader } from "@/components/nav/PublicHeader";
 import { MobileBottomNav } from "@/components/nav/MobileBottomNav";
-import { FeaturedMarket } from "@/components/markets/FeaturedMarket";
+import { FeaturedMarketCarousel } from "@/components/markets/FeaturedMarketCarousel";
 import {
   CategoryRail,
   railKeyToDbCategory,
@@ -126,7 +126,6 @@ function useOpenMarkets() {
 
 function LandingPage() {
   const { markets, count, loading } = useOpenMarkets();
-  const featured = markets[0] ?? null;
 
   return (
     <div className="min-h-screen flex flex-col bg-background pb-[84px] md:pb-0">
@@ -166,7 +165,7 @@ function LandingPage() {
                 className="h-72 rounded-xl border border-border bg-card/50 animate-pulse"
               />
             ) : (
-              <FeaturedMarket market={featured} />
+              <FeaturedMarketCarousel markets={markets} />
             )}
           </div>
         </section>
