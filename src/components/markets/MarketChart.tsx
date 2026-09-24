@@ -75,9 +75,6 @@ export function MarketChart({
   compact = false,
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const svgRef = useRef<SVGSVGElement | null>(null);
-  const dotARef = useRef<SVGCircleElement | null>(null);
-  const dotBRef = useRef<SVGCircleElement | null>(null);
   const [W, setW] = useState(640);
   const reduced = useReducedMotion();
   const randRef = useRef<() => number>(null as unknown as () => number);
@@ -132,41 +129,6 @@ export function MarketChart({
     return { padX, padY, innerW, innerH, x, y, min, max };
   }, [points, W, height]);
 
-  // Traveling pulse dots — positioned imperatively at 60fps, no re-renders.
-  useEffect(() => {
-    if (reduced || compact) return;
-    let raf = 0;
-    const start = performance.now();
-    const css = (name: string, fb: string) => {
-      const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-      return v || fb;
-    };
-    const up = css("--success", "#00E676");
-    const down = css("--destructive", "#FF5252");
-    const place = (el: SVGCircleElement | null, phase: number, now: number) => {
-      if (!el) return;
-      const t = ((now - start) / 1000) * 0.09 + phase; // slow drift across the line
-      const f = t % 1;
-      const fi = f * (points.length - 1);
-      const i0 = Math.floor(fi);
-      const i1 = Math.min(points.length - 1, i0 + 1);
-      const frac = fi - i0;
-      const cx = geom.x(i0) + (geom.x(i1) - geom.x(i0)) * frac;
-      const cy = geom.y(points[i0]) + (geom.y(points[i1]) - geom.y(points[i0])) * frac;
-      el.setAttribute("cx", cx.toFixed(1));
-      el.setAttribute("cy", cy.toFixed(1));
-      el.style.fill = points[i1] >= points[i0] ? up : down;
-      el.setAttribute("opacity", (0.35 + 0.65 * Math.sin(f * Math.PI)).toFixed(2));
-    };
-    const loop = (now: number) => {
-      place(dotARef.current, 0, now);
-      place(dotBRef.current, 0.45, now);
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
-  }, [reduced, compact, points, geom]);
-
   const segments = useMemo(() => {
     const out: { x1: number; y1: number; x2: number; y2: number; dir: 1 | -1 | 0 }[] = [];
     for (let i = 0; i < points.length - 1; i++) {
@@ -198,7 +160,6 @@ export function MarketChart({
   return (
     <div ref={containerRef} className={cn("w-full overflow-hidden", className)} style={{ height }}>
       <svg
-        ref={svgRef}
         width={W}
         height={height}
         viewBox={`0 0 ${W} ${height}`}
@@ -208,7 +169,7 @@ export function MarketChart({
       >
         <defs>
           <linearGradient id={`mc-area-${seed}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" style={{ stopColor: "var(--color-success)" }} stopOpacity={0.14} />
+            <stop offset="0%" style={{ stopColor: "var(--color-success)" }} stopOpacity={0.08} />
             <stop offset="100%" style={{ stopColor: "var(--color-success)" }} stopOpacity={0} />
           </linearGradient>
         </defs>
@@ -221,7 +182,7 @@ export function MarketChart({
             y1={gy}
             y2={gy}
             style={{ stroke: "var(--color-border)" }}
-            strokeOpacity={0.5}
+            strokeOpacity={0.45}
             strokeWidth={1}
             shapeRendering="crispEdges"
           />
@@ -229,12 +190,7 @@ export function MarketChart({
 
         <path d={areaPath} fill={`url(#mc-area-${seed})`} />
 
-        <g
-          style={{
-            filter:
-              "drop-shadow(0 0 5px color-mix(in srgb, var(--color-success) 30%, transparent))",
-          }}
-        >
+        <g>
           {segments.map((s, i) => (
             <line
               key={i}
@@ -250,35 +206,21 @@ export function MarketChart({
                       ? "var(--color-destructive)"
                       : "var(--color-muted-foreground)",
               }}
-              strokeOpacity={s.dir === 0 ? 0.45 : 0.95}
-              strokeWidth={1.75}
+              strokeOpacity={s.dir === 0 ? 0.4 : 0.85}
+              strokeWidth={1.25}
               strokeLinecap="round"
             />
           ))}
         </g>
 
-        {!reduced && !compact && (
-          <g>
-            <circle ref={dotARef} r={3} style={{ filter: "drop-shadow(0 0 4px currentColor)" }} />
-            <circle
-              ref={dotBRef}
-              r={2.25}
-              style={{ filter: "drop-shadow(0 0 4px currentColor)" }}
-            />
-          </g>
-        )}
-
-        {/* Live head tick on the newest point */}
+        {/* Quiet head tick on the newest point */}
         <circle
           cx={geom.x(points.length - 1)}
           cy={geom.y(points[points.length - 1])}
-          r={3.25}
+          r={2.5}
           style={{ fill: lastUp ? "var(--color-success)" : "var(--color-destructive)" }}
-        >
-          {!reduced && (
-            <animate attributeName="r" values="3.25;5.5;3.25" dur="1.8s" repeatCount="indefinite" />
-          )}
-        </circle>
+          opacity={0.9}
+        />
       </svg>
     </div>
   );

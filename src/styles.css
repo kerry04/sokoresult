@@ -347,6 +347,33 @@
   transform: translateY(0);
   position: relative;
 }
+
+/* Horizontal question track — the next market slides in from the right. */
+@utility carousel-track {
+  display: flex;
+  transition: transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+@utility carousel-track-item {
+  min-width: 100%;
+}
+
+/* Fresh market data drifts in horizontally behind the sliding question. */
+@keyframes chart-in {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@utility animate-chart-in {
+  animation: chart-in 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+@utility animate-fade-in {
+  animation: chart-in 0.45s ease;
+}
 @utility bg-up-soft {
   background-color: color-mix(in oklab, var(--color-success) 14%, transparent);
 }
@@ -385,7 +412,9 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-ticker,
   .animate-price-pulse,
-  .animate-boundary {
+  .animate-boundary,
+  .animate-chart-in,
+  .animate-fade-in {
     animation: none;
   }
   /* News wire becomes a plain horizontal scroller when motion is off. */

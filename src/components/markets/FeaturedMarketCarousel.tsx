@@ -74,11 +74,11 @@ function AnimatedNumber({ value, className }: { value: number; className?: strin
 }
 
 /**
- * The live market hero: a carousel of featured markets that auto-rotates,
- * with an animated price chart, gliding probability bar, compact live stats,
- * and the trading ticket beside it. Real open markets drive it; when the
- * database has none, clearly-tagged preview markets stand in so the
- * prototype can be evaluated.
+ * The live market hero, ordered as: market identity → probability →
+ * movement → trade. The question slides horizontally between markets while
+ * the probability readout tweens, the bar glides, and stats flash — nothing
+ * abruptly swaps. Real open markets drive it; clearly-tagged preview
+ * markets stand in only when the database has none.
  */
 export function FeaturedMarketCarousel({ markets }: { markets: ProductMarket[] }) {
   const items = useMemo<CarouselMarket[]>(
@@ -93,6 +93,7 @@ export function FeaturedMarketCarousel({ markets }: { markets: ProductMarket[] }
 
   const safeIndex = Math.min(index, items.length - 1);
   const active = items[safeIndex];
+  const yesPct = Math.round(active.yes_price * 100);
 
   const poke = useCallback(
     (next: number) => {
@@ -133,159 +134,136 @@ export function FeaturedMarketCarousel({ markets }: { markets: ProductMarket[] }
       onFocusCapture={() => setHovering(true)}
       onBlurCapture={() => setHovering(false)}
     >
-      <div className="relative">
-        {items.map((m, i) => (
-          <div
-            key={m.id}
-            role="group"
-            aria-roledescription="slide"
-            aria-label={`${i + 1} of ${items.length}`}
-            aria-hidden={i !== safeIndex}
-            className={cn(
-              "carousel-slide",
-              i === safeIndex ? "carousel-slide-visible" : "carousel-slide-hidden",
-            )}
-          >
-            <Slide market={m} active={i === safeIndex} />
+      <div className="grid lg:grid-cols-[1.55fr_1fr]">
+        {/* Left: identity → probability → movement */}
+        <div className="flex flex-col p-5 sm:p-7">
+          {/* Identity chrome */}
+          <div className="flex items-center justify-between gap-3">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-success">
+              <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" aria-hidden />
+              Live
+            </span>
+            <div className="flex items-center gap-1">
+              <span
+                className="num mr-1.5 flex items-center gap-1.5 text-[11px] font-semibold tabular-nums text-muted-foreground"
+                aria-label={`Market ${safeIndex + 1} of ${items.length}`}
+              >
+                <span className="h-1 w-1 rounded-full bg-success/70" aria-hidden />
+                {String(safeIndex + 1).padStart(2, "0")} / {String(items.length).padStart(2, "0")}
+              </span>
+              <button
+                type="button"
+                onClick={() => poke(safeIndex - 1)}
+                aria-label="Previous market"
+                className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-all duration-150 hover:-translate-y-px hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success/60"
+              >
+                <ChevronLeft className="h-4 w-4" aria-hidden />
+              </button>
+              <button
+                type="button"
+                onClick={() => poke(safeIndex + 1)}
+                aria-label="Next market"
+                className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-all duration-150 hover:-translate-y-px hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success/60"
+              >
+                <ChevronRight className="h-4 w-4" aria-hidden />
+              </button>
+            </div>
           </div>
-        ))}
-      </div>
 
-      {/* Carousel chrome: indicators + prev/next */}
-      <div className="flex items-center justify-between border-t border-border/60 px-4 py-2.5 sm:px-6">
-        <div className="flex items-center gap-1.5" role="tablist" aria-label="Featured markets">
-          {items.map((m, i) => (
-            <button
-              key={m.id}
-              role="tab"
-              aria-selected={i === safeIndex}
-              aria-label={`Show market ${i + 1}: ${m.question.slice(0, 60)}`}
-              onClick={() => poke(i)}
-              className={cn(
-                "h-1.5 rounded-full transition-all duration-300",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success/60",
-                i === safeIndex
-                  ? "w-6 bg-success"
-                  : "w-1.5 bg-muted-foreground/40 hover:bg-muted-foreground/70",
-              )}
+          {/* Sliding identity track: category + question */}
+          <div className="mt-3 overflow-hidden">
+            <div
+              className="carousel-track"
+              style={{ transform: `translateX(-${safeIndex * 100}%)` }}
+            >
+              {items.map((m, i) => (
+                <div
+                  key={m.id}
+                  className="carousel-track-item"
+                  aria-hidden={i !== safeIndex}
+                  role="group"
+                  aria-roledescription="slide"
+                  aria-label={`${i + 1} of ${items.length}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      {m.category}
+                    </span>
+                    {m.demo && (
+                      <span className="rounded border border-border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+                        Preview
+                      </span>
+                    )}
+                  </div>
+                  <h2 className="mt-2 min-h-[4.2rem] max-w-2xl text-xl font-bold leading-[1.25] tracking-tight sm:min-h-[4.6rem] sm:text-2xl">
+                    {m.question}
+                  </h2>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Probability — the visual anchor */}
+          <div className="mt-1 flex items-end gap-3">
+            <AnimatedNumber
+              value={yesPct}
+              className="text-6xl font-extrabold tracking-tight text-success sm:text-7xl"
             />
-          ))}
+            <div className="pb-2">
+              <div className="text-sm font-bold uppercase tracking-[0.16em] text-success">Yes</div>
+              <div className="mt-0.5 text-xs text-muted-foreground">chance</div>
+            </div>
+          </div>
+
+          {/* Movement — deliberately quiet */}
+          <div key={active.seed} className="animate-chart-in mt-1">
+            <MarketChart
+              seed={active.seed}
+              probability={active.yes_price}
+              height={84}
+              className="opacity-80"
+            />
+          </div>
+
+          <div className="mt-2">
+            <ProbabilityBar yesPct={yesPct} />
+          </div>
+
+          <div className="mt-4">
+            <MarketStats items={active.stats} />
+          </div>
+
+          <p className="mt-3 text-xs text-muted-foreground">
+            Closes {active.closesLabel}
+            {!active.demo && (
+              <Link
+                to="/markets/$slug"
+                params={{ slug: active.slug }}
+                className="ml-3 inline-flex items-center gap-1 font-semibold text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Market details <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+              </Link>
+            )}
+          </p>
         </div>
-        <div className="flex items-center gap-1">
-          <span className="num mr-2 text-xs tabular-nums text-muted-foreground" aria-hidden>
-            {safeIndex + 1} / {items.length}
-          </span>
-          <button
-            type="button"
-            onClick={() => poke(safeIndex - 1)}
-            aria-label="Previous market"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-all duration-150 hover:-translate-y-px hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success/60"
-          >
-            <ChevronLeft className="h-4 w-4" aria-hidden />
-          </button>
-          <button
-            type="button"
-            onClick={() => poke(safeIndex + 1)}
-            aria-label="Next market"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-all duration-150 hover:-translate-y-px hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success/60"
-          >
-            <ChevronRight className="h-4 w-4" aria-hidden />
-          </button>
+
+        {/* Right: the trade */}
+        <div className="border-t border-border/60 bg-background/40 p-4 sm:p-5 lg:border-l lg:border-t-0">
+          <div key={active.id} className="animate-fade-in">
+            <TradingTicket
+              market={{
+                id: active.id,
+                slug: active.slug,
+                question: active.question,
+                yes_price: active.yes_price,
+                no_price: active.no_price,
+              }}
+              variant="wide"
+              demo={active.demo}
+            />
+          </div>
         </div>
       </div>
     </article>
-  );
-}
-
-function Slide({ market, active }: { market: CarouselMarket; active: boolean }) {
-  const yesPct = Math.round(market.yes_price * 100);
-
-  return (
-    <div className="grid lg:grid-cols-[1.55fr_1fr]">
-      {/* Left: the market */}
-      <div className="flex flex-col p-5 sm:p-7">
-        <div className="flex items-center gap-2.5">
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-success">
-            <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" aria-hidden />
-            Live
-          </span>
-          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            {market.category}
-          </span>
-          {market.demo && (
-            <span className="rounded border border-border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
-              Preview
-            </span>
-          )}
-        </div>
-
-        <h2 className="mt-3 min-h-[3.6rem] max-w-2xl text-2xl font-extrabold leading-[1.15] tracking-tight sm:min-h-[4.4rem] sm:text-[2rem]">
-          {market.question}
-        </h2>
-
-        <div className="mt-4 flex items-end justify-between gap-4">
-          <div className="flex items-baseline gap-2.5">
-            <AnimatedNumber
-              value={yesPct}
-              className="text-5xl font-extrabold tracking-tight text-success sm:text-6xl"
-            />
-            <span className="pb-1.5 text-sm text-muted-foreground">
-              chance of <span className="font-semibold text-success">Yes</span>
-            </span>
-          </div>
-          <span className="hidden pb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70 sm:block">
-            Live market
-          </span>
-        </div>
-
-        <div className="mt-2">
-          <MarketChart
-            key={market.seed}
-            seed={market.seed}
-            probability={market.yes_price}
-            height={118}
-            className="opacity-90"
-          />
-        </div>
-
-        <div className="mt-3">
-          <ProbabilityBar yesPct={yesPct} />
-        </div>
-
-        <div className="mt-4">
-          <MarketStats items={market.stats} />
-        </div>
-
-        <p className="mt-3 text-xs text-muted-foreground">
-          Closes {market.closesLabel}
-          {!market.demo && (
-            <Link
-              to="/markets/$slug"
-              params={{ slug: market.slug }}
-              tabIndex={active ? 0 : -1}
-              className="ml-3 inline-flex items-center gap-1 font-semibold text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Market details <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-            </Link>
-          )}
-        </p>
-      </div>
-
-      {/* Right: the trading ticket */}
-      <div className="border-t border-border/60 bg-background/40 p-4 sm:p-5 lg:border-l lg:border-t-0">
-        <TradingTicket
-          key={market.id}
-          market={{
-            id: market.id,
-            slug: market.slug,
-            question: market.question,
-            yes_price: market.yes_price,
-            no_price: market.no_price,
-          }}
-          variant="wide"
-          demo={market.demo}
-        />
-      </div>
-    </div>
   );
 }
