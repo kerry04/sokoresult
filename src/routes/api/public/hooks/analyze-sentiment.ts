@@ -249,9 +249,10 @@ export const Route = createFileRoute("/api/public/hooks/analyze-sentiment")({
             else results.push({ id: row.id, ok: true });
           }
 
-          // Small breather between batches
+          // Breather between batches: free-tier OpenRouter allows ~10 req/10s
+          // and upstream free models throttle hard — 8s keeps us well clear.
           if (i + BATCH_SIZE < articles.length) {
-            await new Promise((r) => setTimeout(r, 1200));
+            await new Promise((r) => setTimeout(r, 8000));
           }
         }
 
