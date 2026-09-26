@@ -67,6 +67,7 @@ import { Route as AuthedMarketsSlugRouteImport } from './routes/_authed/markets.
 import { Route as ApiPublicHooksSignalsRouteImport } from './routes/api/public/hooks/signals'
 import { Route as ApiPublicHooksScrapeTweetsRouteImport } from './routes/api/public/hooks/scrape-tweets'
 import { Route as ApiPublicHooksScrapeNewsRouteImport } from './routes/api/public/hooks/scrape-news'
+import { Route as ApiPublicHooksIngestBoardsRouteImport } from './routes/api/public/hooks/ingest-boards'
 import { Route as ApiPublicHooksComputeTrendsRouteImport } from './routes/api/public/hooks/compute-trends'
 import { Route as ApiPublicHooksAutoSuggestMarketsRouteImport } from './routes/api/public/hooks/auto-suggest-markets'
 import { Route as ApiPublicHooksAutoResolveRouteImport } from './routes/api/public/hooks/auto-resolve'
@@ -366,6 +367,12 @@ const ApiPublicHooksScrapeNewsRoute =
     path: '/api/public/hooks/scrape-news',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksIngestBoardsRoute =
+  ApiPublicHooksIngestBoardsRouteImport.update({
+    id: '/api/public/hooks/ingest-boards',
+    path: '/api/public/hooks/ingest-boards',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksComputeTrendsRoute =
   ApiPublicHooksComputeTrendsRouteImport.update({
     id: '/api/public/hooks/compute-trends',
@@ -462,6 +469,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/auto-resolve': typeof ApiPublicHooksAutoResolveRoute
   '/api/public/hooks/auto-suggest-markets': typeof ApiPublicHooksAutoSuggestMarketsRoute
   '/api/public/hooks/compute-trends': typeof ApiPublicHooksComputeTrendsRoute
+  '/api/public/hooks/ingest-boards': typeof ApiPublicHooksIngestBoardsRoute
   '/api/public/hooks/scrape-news': typeof ApiPublicHooksScrapeNewsRoute
   '/api/public/hooks/scrape-tweets': typeof ApiPublicHooksScrapeTweetsRoute
   '/api/public/hooks/signals': typeof ApiPublicHooksSignalsRoute
@@ -525,6 +533,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/auto-resolve': typeof ApiPublicHooksAutoResolveRoute
   '/api/public/hooks/auto-suggest-markets': typeof ApiPublicHooksAutoSuggestMarketsRoute
   '/api/public/hooks/compute-trends': typeof ApiPublicHooksComputeTrendsRoute
+  '/api/public/hooks/ingest-boards': typeof ApiPublicHooksIngestBoardsRoute
   '/api/public/hooks/scrape-news': typeof ApiPublicHooksScrapeNewsRoute
   '/api/public/hooks/scrape-tweets': typeof ApiPublicHooksScrapeTweetsRoute
   '/api/public/hooks/signals': typeof ApiPublicHooksSignalsRoute
@@ -592,6 +601,7 @@ export interface FileRoutesById {
   '/api/public/hooks/auto-resolve': typeof ApiPublicHooksAutoResolveRoute
   '/api/public/hooks/auto-suggest-markets': typeof ApiPublicHooksAutoSuggestMarketsRoute
   '/api/public/hooks/compute-trends': typeof ApiPublicHooksComputeTrendsRoute
+  '/api/public/hooks/ingest-boards': typeof ApiPublicHooksIngestBoardsRoute
   '/api/public/hooks/scrape-news': typeof ApiPublicHooksScrapeNewsRoute
   '/api/public/hooks/scrape-tweets': typeof ApiPublicHooksScrapeTweetsRoute
   '/api/public/hooks/signals': typeof ApiPublicHooksSignalsRoute
@@ -659,6 +669,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/auto-resolve'
     | '/api/public/hooks/auto-suggest-markets'
     | '/api/public/hooks/compute-trends'
+    | '/api/public/hooks/ingest-boards'
     | '/api/public/hooks/scrape-news'
     | '/api/public/hooks/scrape-tweets'
     | '/api/public/hooks/signals'
@@ -722,6 +733,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/auto-resolve'
     | '/api/public/hooks/auto-suggest-markets'
     | '/api/public/hooks/compute-trends'
+    | '/api/public/hooks/ingest-boards'
     | '/api/public/hooks/scrape-news'
     | '/api/public/hooks/scrape-tweets'
     | '/api/public/hooks/signals'
@@ -788,6 +800,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/auto-resolve'
     | '/api/public/hooks/auto-suggest-markets'
     | '/api/public/hooks/compute-trends'
+    | '/api/public/hooks/ingest-boards'
     | '/api/public/hooks/scrape-news'
     | '/api/public/hooks/scrape-tweets'
     | '/api/public/hooks/signals'
@@ -814,6 +827,7 @@ export interface RootRouteChildren {
   ApiPublicHooksAutoResolveRoute: typeof ApiPublicHooksAutoResolveRoute
   ApiPublicHooksAutoSuggestMarketsRoute: typeof ApiPublicHooksAutoSuggestMarketsRoute
   ApiPublicHooksComputeTrendsRoute: typeof ApiPublicHooksComputeTrendsRoute
+  ApiPublicHooksIngestBoardsRoute: typeof ApiPublicHooksIngestBoardsRoute
   ApiPublicHooksScrapeNewsRoute: typeof ApiPublicHooksScrapeNewsRoute
   ApiPublicHooksScrapeTweetsRoute: typeof ApiPublicHooksScrapeTweetsRoute
   ApiPublicHooksSignalsRoute: typeof ApiPublicHooksSignalsRoute
@@ -1227,6 +1241,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksScrapeNewsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/ingest-boards': {
+      id: '/api/public/hooks/ingest-boards'
+      path: '/api/public/hooks/ingest-boards'
+      fullPath: '/api/public/hooks/ingest-boards'
+      preLoaderRoute: typeof ApiPublicHooksIngestBoardsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/compute-trends': {
       id: '/api/public/hooks/compute-trends'
       path: '/api/public/hooks/compute-trends'
@@ -1422,6 +1443,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksAutoResolveRoute: ApiPublicHooksAutoResolveRoute,
   ApiPublicHooksAutoSuggestMarketsRoute: ApiPublicHooksAutoSuggestMarketsRoute,
   ApiPublicHooksComputeTrendsRoute: ApiPublicHooksComputeTrendsRoute,
+  ApiPublicHooksIngestBoardsRoute: ApiPublicHooksIngestBoardsRoute,
   ApiPublicHooksScrapeNewsRoute: ApiPublicHooksScrapeNewsRoute,
   ApiPublicHooksScrapeTweetsRoute: ApiPublicHooksScrapeTweetsRoute,
   ApiPublicHooksSignalsRoute: ApiPublicHooksSignalsRoute,
