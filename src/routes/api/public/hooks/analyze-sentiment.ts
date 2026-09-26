@@ -62,7 +62,7 @@ const BATCH_TOOL = {
             },
             category: {
               type: "string",
-              enum: ["politics", "sports", "entertainment", "economics"],
+              enum: ["politics", "sports", "entertainment", "fashion", "economics"],
             },
             market_potential: {
               type: "number",
@@ -239,7 +239,13 @@ export const Route = createFileRoute("/api/public/hooks/analyze-sentiment")({
               last_error: null,
               analyze_attempts: (row.analyze_attempts ?? 0) + 1,
             };
-            if (!row.category) update.category = item.category;
+            // Guard: some models ignore the schema enum and invent categories
+            // ("technology", "education", ...). Never let that fail the write —
+            // leave category unset rather than burning the article's attempt.
+            const VALID_CATEGORIES = ["politics", "sports", "entertainment", "fashion", "economics"];
+            if (!row.category && typeof item.category === "string" && VALID_CATEGORIES.includes(item.category)) {
+              update.category = item.category;
+            }
 
             const { error: upErr } = await admin
               .from("raw_news_data")
