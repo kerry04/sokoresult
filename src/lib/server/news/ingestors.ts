@@ -320,7 +320,7 @@ export function maxCitizenId(urls: string[]): number {
 
 // ───────────────────────────── ingestors ─────────────────────────────
 
-export type IngestorKind = "rss" | "html-listing" | "news-sitemap" | "gnews-rss";
+export type IngestorKind = "rss" | "html-listing" | "news-sitemap" | "gnews-rss" | "gdelt" | "usgs";
 
 export interface OutletConfig {
   /** Stored verbatim in raw_news_data.source — must be unique per feed. */
@@ -338,6 +338,10 @@ export interface OutletConfig {
   sitemapUrl?: string;
   /** gnews-rss: `site:` query terms. */
   gnewsQuery?: string;
+  /** gnews-rss: full Google News RSS feed URL (topic/edition feeds). Takes precedence over gnewsQuery. */
+  feedUrl?: string;
+  /** gdelt: GDELT DOC 2.1 query string (thousands of global outlets, no key needed). */
+  gdeltQuery?: string;
   /** Tier 2: only attempt direct fetch when NEWS_BROWSER_SCRAPE_ENABLED. */
   browserOnly?: boolean;
 }
@@ -442,11 +446,12 @@ async function ingestNewsSitemap(outlet: OutletConfig): Promise<IngestResult> {
 }
 
 async function ingestGnewsRss(outlet: OutletConfig): Promise<IngestResult> {
-  const q = encodeURIComponent(
-    outlet.gnewsQuery ??
-      `site:${new URL(outlet.listingUrls?.[0] ?? "https://example.com").hostname}`,
-  );
-  const feedUrl = `https://news.google.com/rss/search?q=${q}&hl=en-KE&gl=KE&ceid=KE:en`;
+  const feedUrl =
+    outlet.feedUrl ??
+    `https://news.google.com/rss/search?q=${encodeURIComponent(
+      outlet.gnewsQuery ??
+        `site:${new URL(outlet.listingUrls?.[0] ?? "https://example.com").hostname}`,
+    )}&hl=en-KE&gl=KE&ceid=KE:en`;
   const doc = await fetchDoc(feedUrl);
   if (!doc.ok || !doc.body) {
     return {
@@ -459,6 +464,118 @@ async function ingestGnewsRss(outlet: OutletConfig): Promise<IngestResult> {
   const articles = parseRss(doc.body, feedUrl)
     // Google News links are redirect wrappers; keep them — they resolve and are unique per story.
     .map((a) => ({ ...a, title: a.title.replace(/ - [^-]+$/, "").trim() }));
+  return { source: outlet.source, ok: true, articles: articles.slice(0, MAX_PER_OUTLET) };
+}
+
+// ───────────────────────────── GDELT ─────────────────────────────
+// GDELT DOC 2.1 API: free, no key, thousands of global outlets per query.
+// Politeness: GDELT asks for ≥5s between requests — enforced module-wide so
+// parallel outlet ingestion can't burst it.
+
+let lastGdeltCall = 0;
+
+function parseGdeltDate(seen: string): string {
+  const m = seen.match(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z/);
+  if (m) return `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}Z`;
+  return new Date().toISOString();
+}
+
+interface GdeltDoc {
+  url?: string;
+  title?: string;
+  seendate?: string;
+  domain?: string;
+  language?: string;
+  socialimage?: string;
+}
+
+async function ingestGdelt(outlet: OutletConfig): Promise<IngestResult> {
+  const wait = 6000 - (Date.now() - lastGdeltCall);
+  if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+  lastGdeltCall = Date.now();
+
+  const apiUrl =
+    `https://api.gdeltproject.org/api/v2/doc/doc?query=${encodeURIComponent(
+      outlet.gdeltQuery ?? "kenya",
+    )}&mode=artlist&maxrecords=250&format=json&sort=datedesc`;
+  const doc = await fetchDoc(apiUrl, 30_000);
+  if (!doc.ok || !doc.body) {
+    return {
+      source: outlet.source,
+      ok: false,
+      articles: [],
+      error: doc.error ?? `HTTP ${doc.status}`,
+    };
+  }
+  let parsed: { articles?: GdeltDoc[] };
+  try {
+    parsed = JSON.parse(doc.body);
+  } catch {
+    return { source: outlet.source, ok: false, articles: [], error: "invalid JSON" };
+  }
+  const seen = new Set<string>();
+  const articles: Article[] = [];
+  for (const d of parsed.articles ?? []) {
+    if (!d.url || !d.title) continue;
+    if (d.language && d.language !== "English") continue;
+    if (seen.has(d.url)) continue;
+    seen.add(d.url);
+    articles.push({
+      url: d.url,
+      title: d.title.slice(0, 500),
+      body: null,
+      imageUrl: d.socialimage || null,
+      publishedAt: d.seendate ? parseGdeltDate(d.seendate) : new Date().toISOString(),
+    });
+  }
+  return { source: outlet.source, ok: true, articles: articles.slice(0, MAX_PER_OUTLET) };
+}
+
+// ───────────────────────────── USGS earthquakes ─────────────────────────────
+// Free global seismic feed (no key). Real hazard signals for the signal map:
+// magnitude ≥4.5 in the last 24h. Stored as signal rows (category null — the
+// market_category enum has no hazard value, and null is honest).
+
+interface UsgsFeature {
+  properties?: { mag?: number; place?: string; time?: number; url?: string; title?: string };
+}
+
+async function ingestUsgs(outlet: OutletConfig): Promise<IngestResult> {
+  const since = new Date(Date.now() - 24 * 3600_000).toISOString().slice(0, 10);
+  const apiUrl =
+    `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson` +
+    `&starttime=${since}&minmagnitude=4.5&orderby=time&limit=50`;
+  const doc = await fetchDoc(apiUrl, 30_000);
+  if (!doc.ok || !doc.body) {
+    return {
+      source: outlet.source,
+      ok: false,
+      articles: [],
+      error: doc.error ?? `HTTP ${doc.status}`,
+    };
+  }
+  let parsed: { features?: UsgsFeature[] };
+  try {
+    parsed = JSON.parse(doc.body);
+  } catch {
+    return { source: outlet.source, ok: false, articles: [], error: "invalid JSON" };
+  }
+  const seen = new Set<string>();
+  const articles: Article[] = [];
+  for (const f of parsed.features ?? []) {
+    const p = f.properties ?? {};
+    if (!p.url || p.mag == null) continue;
+    if (seen.has(p.url)) continue;
+    seen.add(p.url);
+    const title = p.title ?? `M${p.mag} earthquake${p.place ? ` — ${p.place}` : ""}`;
+    articles.push({
+      url: p.url,
+      title: title.slice(0, 500),
+      body: `${title}. Reported by the USGS Earthquake Hazards Program.`,
+      imageUrl: null,
+      publishedAt: p.time ? new Date(p.time).toISOString() : new Date().toISOString(),
+    });
+  }
   return { source: outlet.source, ok: true, articles: articles.slice(0, MAX_PER_OUTLET) };
 }
 
@@ -484,6 +601,10 @@ export async function ingestOutlet(outlet: OutletConfig, admin: AnyClient): Prom
         return await ingestNewsSitemap(outlet);
       case "gnews-rss":
         return await ingestGnewsRss(outlet);
+      case "gdelt":
+        return await ingestGdelt(outlet);
+      case "usgs":
+        return await ingestUsgs(outlet);
       default:
         return { source: outlet.source, ok: false, articles: [], error: `unknown ingestor` };
     }
@@ -603,4 +724,113 @@ export const OUTLETS: OutletConfig[] = [
     gnewsQuery: "site:tuko.co.ke",
     listingUrls: ["https://www.tuko.co.ke/feed/"],
   },
+
+  // ── GDELT: thousands of global outlets per query (free, no key) ──
+  { source: "GDELT Kenya", ingestor: "gdelt", gdeltQuery: "kenya sourcelang:english" },
+  {
+    source: "GDELT Africa",
+    ingestor: "gdelt",
+    gdeltQuery: '(africa OR nigeria OR "south africa" OR ghana OR egypt) sourcelang:english',
+  },
+  {
+    source: "GDELT Protests",
+    ingestor: "gdelt",
+    defaultCategory: "politics",
+    gdeltQuery: "theme:PROTEST sourcelang:english",
+  },
+  {
+    source: "GDELT Conflict",
+    ingestor: "gdelt",
+    defaultCategory: "politics",
+    gdeltQuery: "theme:ARMEDCONFLICT sourcelang:english",
+  },
+  {
+    source: "GDELT Markets",
+    ingestor: "gdelt",
+    defaultCategory: "economics",
+    gdeltQuery: '(stocks OR inflation OR "central bank" OR "interest rate") sourcelang:english',
+  },
+
+  // ── Google News topic feeds: each aggregates thousands of outlets ──
+  {
+    source: "Google News World",
+    ingestor: "gnews-rss",
+    feedUrl: "https://news.google.com/rss/headlines/section/topic/WORLD?hl=en-KE&gl=KE&ceid=KE:en",
+  },
+  {
+    source: "Google News Business",
+    ingestor: "gnews-rss",
+    defaultCategory: "economics",
+    feedUrl:
+      "https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=en-KE&gl=KE&ceid=KE:en",
+  },
+  {
+    source: "Google News Technology",
+    ingestor: "gnews-rss",
+    feedUrl:
+      "https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=en-KE&gl=KE&ceid=KE:en",
+  },
+  {
+    source: "Google News Sports",
+    ingestor: "gnews-rss",
+    defaultCategory: "sports",
+    feedUrl: "https://news.google.com/rss/headlines/section/topic/SPORTS?hl=en-KE&gl=KE&ceid=KE:en",
+  },
+  {
+    source: "Google News Science",
+    ingestor: "gnews-rss",
+    feedUrl:
+      "https://news.google.com/rss/headlines/section/topic/SCIENCE?hl=en-KE&gl=KE&ceid=KE:en",
+  },
+  {
+    source: "Google News Kenya",
+    ingestor: "gnews-rss",
+    feedUrl: "https://news.google.com/rss?hl=en-KE&gl=KE&ceid=KE:en",
+  },
+
+  // ── Global RSS (verified 2026-09-26) ──
+  { source: "BBC World", ingestor: "rss", feeds: ["http://feeds.bbci.co.uk/news/world/rss.xml"] },
+  {
+    source: "BBC Africa",
+    ingestor: "rss",
+    feeds: ["http://feeds.bbci.co.uk/news/world/africa/rss.xml"],
+  },
+  {
+    source: "BBC Business",
+    ingestor: "rss",
+    defaultCategory: "economics",
+    feeds: ["http://feeds.bbci.co.uk/news/business/rss.xml"],
+  },
+  { source: "Al Jazeera", ingestor: "rss", feeds: ["https://www.aljazeera.com/xml/rss/all.xml"] },
+  { source: "DW News", ingestor: "rss", feeds: ["https://rss.dw.com/rdf/rss-en-all"] },
+  { source: "DW Africa", ingestor: "rss", feeds: ["https://rss.dw.com/rdf/rss-en-africa"] },
+  { source: "France 24", ingestor: "rss", feeds: ["https://www.france24.com/en/rss"] },
+  { source: "Guardian World", ingestor: "rss", feeds: ["https://www.theguardian.com/world/rss"] },
+  {
+    source: "Sky News World",
+    ingestor: "rss",
+    feeds: ["https://feeds.skynews.com/feeds/rss/world.xml"],
+  },
+  {
+    source: "allAfrica",
+    ingestor: "rss",
+    feeds: ["https://allafrica.com/tools/headlines/rdf/latest/headlines.rdf"],
+  },
+  {
+    source: "Premium Times",
+    ingestor: "rss",
+    feeds: ["https://www.premiumtimesng.com/feed"],
+  },
+  { source: "NTV Kenya", ingestor: "rss", feeds: ["https://ntvkenya.co.ke/feed/"] },
+
+  // ── Bot-blocked; gnews fallback ──
+  {
+    source: "Daily Maverick",
+    ingestor: "gnews-rss",
+    browserOnly: true,
+    gnewsQuery: "site:dailymaverick.co.za",
+  },
+
+  // ── Hazard signals (free, no key) ──
+  { source: "USGS Earthquakes", ingestor: "usgs" },
 ];

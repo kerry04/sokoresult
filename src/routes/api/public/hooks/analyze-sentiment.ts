@@ -143,7 +143,7 @@ async function scoreBatch(
 }
 
 const BATCH_SIZE = 15;
-const MAX_PER_RUN = 60;
+const MAX_PER_RUN = 120;
 
 export const Route = createFileRoute("/api/public/hooks/analyze-sentiment")({
   server: {

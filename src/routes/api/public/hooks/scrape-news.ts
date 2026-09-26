@@ -3,10 +3,11 @@ import { requireCronSecret } from "@/lib/server/cron-auth";
 import { createClient } from "@supabase/supabase-js";
 import { OUTLETS, ingestOutlet, type Article } from "@/lib/server/news/ingestors";
 
-// Kenyan news ingestion — config-driven, 4 ingestor code paths, 18 outlets.
-// See src/lib/server/news/ingestors.ts (spec: kenyan-news-sources.md).
-// Cadence: fired by pg_cron on the 15-min cycle; outlets are fetched
-// sequentially with a small stagger so we never burst-request the same host.
+// Kenyan + global news ingestion — config-driven, 7 ingestor code paths, ~45 outlets.
+// See src/lib/server/news/ingestors.ts.
+// Cadence: fired by pg_cron on the ~20-min cycle; outlets are ingested in
+// parallel (≤6 concurrent) since the work is HTTP-bound, then DB writes run
+// sequentially to keep the in-run URL dedupe exact.
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyClient = any;
@@ -61,6 +62,24 @@ function toRow(outletSource: string, a: Article, defaultCategory?: string) {
 
 const STAGGER_MS = 400;
 
+/** Bounded-parallel map for the HTTP-bound ingest phase. */
+async function mapLimit<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let i = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (i < items.length) {
+      const idx = i++;
+      results[idx] = await fn(items[idx]);
+    }
+  });
+  await Promise.all(workers);
+  return results;
+}
+
 export const Route = createFileRoute("/api/public/hooks/scrape-news")({
   server: {
     handlers: {
@@ -94,9 +113,15 @@ export const Route = createFileRoute("/api/public/hooks/scrape-news")({
           }
         };
 
-        for (const outlet of OUTLETS) {
-          const fetchStarted = new Date().toISOString();
-          const res = await ingestOutlet(outlet, admin);
+        // Phase 1: ingest outlets in parallel (HTTP-bound, ≤6 concurrent).
+        // Phase 2 below stays sequential: in-run URL dedupe + DB writes + health.
+        const fetchStartedAt = OUTLETS.map(() => new Date().toISOString());
+        const ingestResults = await mapLimit(OUTLETS, 6, (outlet) => ingestOutlet(outlet, admin));
+
+        for (let oi = 0; oi < OUTLETS.length; oi++) {
+          const outlet = OUTLETS[oi];
+          const fetchStarted = fetchStartedAt[oi];
+          const res = ingestResults[oi];
 
           if (res.skipped) {
             results.push({
