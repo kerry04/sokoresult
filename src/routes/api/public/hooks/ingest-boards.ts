@@ -1,20 +1,33 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { requireCronSecret } from "@/lib/server/cron-auth";
 import { createClient } from "@supabase/supabase-js";
-import { parseAFTable } from "@/lib/server/stocks/africanfinancials";
 
 /**
  * POST /api/public/hooks/ingest-boards
  * Daily EOD board ingest for NSE/NGX/GSE (feeds soko-stock's boards).
  * A VM cron fetches the African Financials price-list pages with curl
- * (their WAF blocks Vercel and Supabase IPs, but not the VM) and POSTs the
- * raw HTML here:
+ * (their WAF blocks Vercel and Supabase IPs, but not the VM), parses the
+ * tables, and POSTs the compact rows here (large HTML payloads don't
+ * survive the egress proxy, so parsing happens on the VM):
  *
- *   { "exchange": "NSE", "html": "<page html>" }
+ *   { "exchange": "NSE", "rows": [{ticker, name, price, change_percent,
+ *     volume, value_traded, ytd_percent, sector, updated}, ...] }
  *
  * Auth: x-cron-secret header (same CRON_SECRET as the other hooks).
- * Parses the table and upserts into public.stock_boards. Idempotent.
+ * Upserts into public.stock_boards. Idempotent.
  */
+interface BoardRowIn {
+  ticker: string;
+  name: string;
+  price: number;
+  change_percent?: number | null;
+  volume?: number | null;
+  value_traded?: number | null;
+  ytd_percent?: number | null;
+  sector?: string | null;
+  updated?: string | null;
+}
+
 export const Route = createFileRoute("/api/public/hooks/ingest-boards")({
   server: {
     handlers: {
@@ -22,7 +35,7 @@ export const Route = createFileRoute("/api/public/hooks/ingest-boards")({
         const denied = requireCronSecret(request);
         if (denied) return denied;
 
-        let body: { exchange?: string; html?: string };
+        let body: { exchange?: string; rows?: BoardRowIn[] };
         try {
           body = await request.json();
         } catch {
@@ -31,20 +44,21 @@ export const Route = createFileRoute("/api/public/hooks/ingest-boards")({
             headers: { "content-type": "application/json" },
           });
         }
-        const { exchange, html } = body;
-        if (!exchange || !html || typeof html !== "string" || html.length < 1000) {
+        const { exchange, rows } = body;
+        if (
+          !exchange ||
+          !Array.isArray(rows) ||
+          rows.length === 0 ||
+          rows.some(
+            (r) =>
+              !r || typeof r.ticker !== "string" || typeof r.name !== "string" ||
+              typeof r.price !== "number" || !Number.isFinite(r.price),
+          )
+        ) {
           return new Response(JSON.stringify({ ok: false, error: "bad request" }), {
             status: 400,
             headers: { "content-type": "application/json" },
           });
-        }
-
-        const rows = parseAFTable(html, exchange);
-        if (rows.length === 0) {
-          return new Response(
-            JSON.stringify({ ok: false, error: "no rows parsed", exchange }),
-            { status: 422, headers: { "content-type": "application/json" } },
-          );
         }
 
         const admin = createClient(
@@ -58,12 +72,12 @@ export const Route = createFileRoute("/api/public/hooks/ingest-boards")({
             ticker: r.ticker,
             name: r.name,
             price: r.price,
-            change_percent: r.changePercent,
-            volume: r.volume,
-            value_traded: r.value,
-            ytd_percent: r.ytdPercent,
-            sector: r.sector,
-            updated: r.updated,
+            change_percent: r.change_percent ?? null,
+            volume: r.volume ?? null,
+            value_traded: r.value_traded ?? null,
+            ytd_percent: r.ytd_percent ?? null,
+            sector: r.sector ?? null,
+            updated: r.updated ?? null,
             fetched_at: new Date().toISOString(),
           })),
           { onConflict: "exchange,ticker" },
